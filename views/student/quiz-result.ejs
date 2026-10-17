@@ -1,0 +1,44 @@
+<div class="max-w-3xl mx-auto">
+  <h1 class="text-2xl font-extrabold text-navy dark:text-white"><%= quiz.title %> — Result</h1>
+
+  <% if (typeof blocked !== 'undefined' && blocked) { %>
+    <div class="mt-6 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 rounded-xl p-5 text-sm">
+      You've used all <%= quiz.attempts_allowed %> attempt(s) for this quiz. Your past attempts are below.
+    </div>
+    <div class="mt-4 space-y-2">
+      <% attempts.forEach(a => { %>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow px-4 py-3 text-sm flex justify-between">
+          <span>Attempt <%= a.attempt_no %> — <%= fmtDateTime(a.submitted_at) %></span>
+          <span class="font-bold"><%= a.score != null ? a.score + ' / ' + a.max_score : a.status %></span>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="mt-6 bg-navy text-white rounded-2xl p-6 text-center">
+      <% if (attempt.status === 'needs_grading') { %>
+        <p class="text-xl font-bold">Submitted ✓</p>
+        <p class="text-sm text-gray-300 mt-2">Your quiz includes open-ended answers. Your teacher will grade them and you'll be notified.</p>
+      <% } else { %>
+        <p class="text-sm text-gray-300">Your score</p>
+        <p class="text-5xl font-extrabold text-gold mt-1"><%= attempt.score %> <span class="text-2xl text-gray-300">/ <%= attempt.max_score %></span></p>
+        <% const pct = attempt.max_score ? Math.round(attempt.score / attempt.max_score * 100) : 0; %>
+        <p class="mt-2 text-sm"><%= pct %>% <%= quiz.passing_score ? (pct >= quiz.passing_score ? '— Passed ✓' : '— Passing score: ' + quiz.passing_score + '%') : '' %></p>
+      <% } %>
+    </div>
+
+    <div class="mt-6 space-y-4">
+      <% questions.forEach((q, i) => { const given = answers['q' + q.id]; const correct = JSON.parse(q.correct_json); %>
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow text-sm">
+          <p class="font-semibold"><%= i + 1 %>. <%= q.prompt %></p>
+          <p class="mt-2 text-gray-600 dark:text-gray-300">Your answer: <strong><%= Array.isArray(given) ? given.join(', ') : (given || '—') %></strong></p>
+          <% if (['multiple_choice','multiple_select','true_false','fill_blank'].includes(q.qtype)) { %>
+            <p class="mt-1 text-gray-600 dark:text-gray-300">Correct answer: <strong class="text-green-700 dark:text-green-300"><%= Array.isArray(correct) ? correct.join(' | ') : correct %></strong></p>
+          <% } else { %>
+            <p class="mt-1 text-gray-500 italic">Graded by your teacher.</p>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+  <a href="/dashboard" class="inline-block mt-6 text-sm underline">← Back to dashboard</a>
+</div>

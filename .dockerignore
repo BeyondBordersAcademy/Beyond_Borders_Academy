@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+data
+uploads
+.git
+.gitignore
+*.log
+.DS_Store
+watchdog.sh
+BUILD_REPORT.md

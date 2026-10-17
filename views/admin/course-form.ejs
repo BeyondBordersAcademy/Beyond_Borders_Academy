@@ -1,0 +1,60 @@
+<%- include('_nav', { active: '/admin/courses' }) %>
+<h1 class="text-2xl font-extrabold text-navy dark:text-white"><%= c ? 'Course Settings' : 'New Course' %></h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<div class="max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+  <form method="post" action="<%= c ? '/admin/courses/' + c.id : '/admin/courses' %>" class="space-y-4 text-sm">
+    <% if (c) { %><input type="hidden" name="action" value="update"><% } %>
+    <div><label class="block font-semibold mb-1">Course title *</label>
+      <input name="title" required maxlength="200" value="<%= c ? c.title : '' %>" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <div><label class="block font-semibold mb-1">Description</label>
+      <textarea name="description" rows="4" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"><%= c ? c.description : '' %></textarea></div>
+    <div><label class="block font-semibold mb-1">Learning objectives (one per line)</label>
+      <textarea name="objectives" rows="4" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"><%= c ? c.objectives : '' %></textarea></div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="block font-semibold mb-1">Level</label>
+        <select name="level" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+          <option value="">—</option><% ['A1','A2','B1','B2','C1','C2'].forEach(l => { %><option <%= c && c.level === l ? 'selected' : '' %>><%= l %></option><% }) %>
+        </select></div>
+      <div><label class="block font-semibold mb-1">Format</label>
+        <select name="format" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+          <% ['self-paced','cohort','blended'].forEach(f => { %><option <%= c && c.format === f ? 'selected' : '' %>><%= f %></option><% }) %>
+        </select></div>
+      <div><label class="block font-semibold mb-1">Instructor</label>
+        <input name="instructor" maxlength="120" value="<%= c ? c.instructor : '' %>" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+      <div><label class="block font-semibold mb-1">Price (USD)</label>
+        <input name="price_cents" type="number" min="0" step="1" value="<%= c ? Math.round(c.price_cents/100) : 0 %>" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+        <p class="text-xs text-gray-500 mt-1">Online payments are not enabled in Phase 1 — paid courses require manual enrollment.</p></div>
+      <div><label class="block font-semibold mb-1">Enrollment</label>
+        <select name="enrollment_mode" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+          <% [['open','Open — anyone can enroll'],['approval','Approval — you approve each student'],['invite','Invite — invitation only']].forEach(([v,l]) => { %><option value="<%= v %>" <%= c && c.enrollment_mode === v ? 'selected' : '' %>><%= l %></option><% }) %>
+        </select></div>
+      <div><label class="block font-semibold mb-1">Status</label>
+        <select name="status" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+          <% [['draft','Draft'],['published','Published'],['archived','Archived']].forEach(([v,l]) => { %><option value="<%= v %>" <%= c && c.status === v ? 'selected' : '' %>><%= l %></option><% }) %>
+        </select></div>
+    </div>
+    <% if (c) { %>
+      <div>
+        <label class="block font-semibold mb-1">Grading weights (% per category — leave blank for simple average)</label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <% const cfg = (() => { try { return JSON.parse(c.grading_config_json || '{}'); } catch { return {}; } })(); const cats = (cfg.categories || {}); %>
+          <% ['assignments','quizzes','exams','participation'].forEach(cat => { %>
+            <label class="text-xs"><%= cat %><input name="weight_<%= cat %>" type="number" min="0" max="100" step="1" value="<%= cats[cat] || '' %>" class="mt-1 w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-900"></label>
+          <% }) %>
+        </div>
+      </div>
+      <div><label class="block font-semibold mb-1">Completion requirements (shown to students)</label>
+        <textarea name="completion_requirements" rows="2" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"><%= c.completion_requirements %></textarea></div>
+      <div><label class="block font-semibold mb-1">Certificate requirements</label>
+        <textarea name="certificate_requirements" rows="2" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900" placeholder="e.g. 100% of lessons complete and overall grade of 70% or higher"><%= c.certificate_requirements %></textarea></div>
+    <% } %>
+    <button class="bg-gold text-navy font-bold px-6 py-2.5 rounded-lg"><%= c ? 'Save Changes' : 'Create Course' %></button>
+    <% if (c) { %><a href="/admin/courses/<%= c.id %>/builder" class="ml-2 text-sm underline">← Back to builder</a><% } %>
+  </form>
+  <% if (c) { %>
+    <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-4 flex gap-2 text-sm">
+      <form method="post" action="/admin/courses/<%= c.id %>" onsubmit="return confirm('Archive this course? Students keep their records.')"><input type="hidden" name="action" value="archive"><button class="border border-gray-300 px-3 py-1.5 rounded">Archive</button></form>
+      <form method="post" action="/admin/courses/<%= c.id %>" onsubmit="return confirm('Delete this course? Only possible when no enrollments exist.')"><input type="hidden" name="action" value="delete"><button class="border border-red-300 text-red-700 px-3 py-1.5 rounded">Delete</button></form>
+    </div>
+  <% } %>
+</div>

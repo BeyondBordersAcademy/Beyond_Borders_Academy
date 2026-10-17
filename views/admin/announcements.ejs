@@ -1,0 +1,38 @@
+<%- include('_nav', { active: '/admin/announcements' }) %>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Announcements</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+
+<div class="max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow p-6 mb-6">
+  <h2 class="font-bold text-navy dark:text-white mb-3">Publish announcement</h2>
+  <form method="post" action="/admin/announcements" class="space-y-3 text-sm">
+    <div><label class="block font-semibold mb-1">Title *</label>
+      <input name="title" required maxlength="200" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <div><label class="block font-semibold mb-1">Message</label>
+      <textarea name="body" rows="4" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></textarea></div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="block font-semibold mb-1">Audience</label>
+        <select name="audience" id="audSel" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+          <option value="all">Entire academy</option><option value="course">Specific course</option>
+        </select></div>
+      <div id="courseWrap" class="hidden"><label class="block font-semibold mb-1">Course</label>
+        <select name="course_id" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+          <% courses.forEach(c => { %><option value="<%= c.id %>"><%= c.title %></option><% }) %>
+        </select></div>
+    </div>
+    <button class="bg-gold text-navy font-bold px-5 py-2 rounded-lg">Publish</button>
+  </form>
+</div>
+
+<div class="space-y-2 max-w-3xl">
+  <% list.forEach(a => { %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow px-4 py-3 text-sm border-l-4 border-gold">
+      <p class="font-semibold"><%= a.title %> <span class="font-normal text-xs text-gray-500">— <%= a.author || 'Academy' %>, <%= fmtDateTime(a.created_at) %>, <%= a.audience %><%= a.course_title ? ': ' + a.course_title : '' %></span></p>
+      <p class="text-gray-600 dark:text-gray-300 whitespace-pre-line mt-1"><%= a.body %></p>
+    </div>
+  <% }) %>
+</div>
+<script>
+document.getElementById('audSel').addEventListener('change', function () {
+  document.getElementById('courseWrap').classList.toggle('hidden', this.value !== 'course');
+});
+</script>

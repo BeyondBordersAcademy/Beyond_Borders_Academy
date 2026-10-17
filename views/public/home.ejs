@@ -1,0 +1,85 @@
+<% // Homepage per master prompt section 19 %>
+<section class="bg-navy text-white rounded-2xl px-6 py-14 sm:px-12 text-center relative overflow-hidden">
+  <div class="absolute inset-x-0 top-0 h-1.5 bg-gold"></div>
+  <div class="max-w-3xl mx-auto">
+    <div class="flex justify-center mb-6"><%- include('../partials/logo', { size: 72 }) %></div>
+    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight"><%= heroHeadline %></h1>
+    <p class="mt-4 text-base sm:text-lg text-gray-200"><%= heroSub %></p>
+    <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+      <a href="/courses" class="bg-gold text-navy font-bold px-8 py-3 rounded-lg hover:bg-gold-600 hover:text-white transition">Explore Our Courses</a>
+      <a href="/login" class="border border-white/50 px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition">Student Login</a>
+    </div>
+    <p class="mt-4 text-sm text-gray-300">New here? <a href="/placement" class="text-gold underline">Take the free placement test</a> to find your level.</p>
+  </div>
+</section>
+
+<section class="mt-12 max-w-4xl mx-auto text-center">
+  <h2 class="text-2xl font-bold text-navy dark:text-white">Our Mission</h2>
+  <div class="gold-underline w-16 mx-auto mt-2 mb-4"></div>
+  <% mission.split('\n\n').forEach(p => { %>
+    <p class="text-gray-700 dark:text-gray-300 leading-relaxed mt-3"><%= p %></p>
+  <% }) %>
+</section>
+
+<section class="mt-12">
+  <h2 class="text-2xl font-bold text-navy dark:text-white text-center">Our Core Values</h2>
+  <div class="gold-underline w-16 mx-auto mt-2 mb-6"></div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    <% values.forEach(v => { %>
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow text-center border-t-2 border-gold">
+        <span class="font-semibold text-navy dark:text-gold"><%= v %></span>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<section class="mt-12">
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-2xl font-bold text-navy dark:text-white">Featured Courses</h2>
+    <a href="/courses" class="text-sm text-navy dark:text-gold underline">View all courses →</a>
+  </div>
+  <% if (!courses.length) { %>
+    <p class="text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl p-6 shadow">Courses are being prepared. Check back soon — or <a href="/contact" class="underline">contact us</a> to be notified.</p>
+  <% } %>
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <% courses.forEach(c => { %>
+      <article class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden flex flex-col border border-gray-100 dark:border-gray-700">
+        <div class="bg-navy h-2"></div>
+        <div class="p-5 flex-1 flex flex-col">
+          <div class="flex items-center gap-2 mb-2">
+            <% if (c.level) { %><span class="text-xs font-bold bg-gold/15 text-gold-600 dark:text-gold px-2 py-0.5 rounded"><%= c.level %></span><% } %>
+            <span class="text-xs text-gray-500 dark:text-gray-400"><%= c.format %></span>
+          </div>
+          <h3 class="font-bold text-lg text-navy dark:text-white"><%= c.title %></h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300 mt-2 flex-1"><%= (c.description || '').slice(0, 140) %><%= (c.description || '').length > 140 ? '…' : '' %></p>
+          <div class="mt-4 flex items-center justify-between">
+            <span class="text-sm font-semibold"><%= c.price_cents > 0 ? '$' + (c.price_cents/100).toFixed(2) : 'Free' %></span>
+            <a href="/courses/<%= c.slug %>" class="text-sm bg-navy text-white px-4 py-2 rounded hover:bg-navy-800">View course</a>
+          </div>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</section>
+
+<section class="mt-12 bg-white dark:bg-gray-800 rounded-2xl shadow p-6 sm:p-10">
+  <h2 class="text-2xl font-bold text-navy dark:text-white text-center">Frequently Asked Questions</h2>
+  <div class="gold-underline w-16 mx-auto mt-2 mb-6"></div>
+  <div class="max-w-3xl mx-auto space-y-4">
+    <% faqs.forEach(([q, a]) => { %>
+      <details class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+        <summary class="font-semibold cursor-pointer text-navy dark:text-white"><%= q %></summary>
+        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300 leading-relaxed"><%= a %></p>
+      </details>
+    <% }) %>
+  </div>
+</section>
+
+<section class="mt-12 text-center bg-navy text-white rounded-2xl px-6 py-10">
+  <h2 class="text-2xl font-bold">Ready to break barriers?</h2>
+  <p class="mt-2 text-gray-200">Join <%= siteName %> and start building your future in English today.</p>
+  <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+    <a href="/register" class="bg-gold text-navy font-bold px-8 py-3 rounded-lg hover:bg-gold-600 hover:text-white transition">Enroll Now</a>
+    <a href="/placement" class="border border-white/50 px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition">Take the Placement Test</a>
+  </div>
+</section>

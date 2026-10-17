@@ -1,0 +1,21 @@
+<%- include('_nav', { active: '/admin/quizzes' }) %>
+<nav class="text-xs text-gray-500 mb-4"><a href="/admin/quizzes/<%= attempt.quiz_id %>/attempts" class="underline">Attempts</a> › Grade</nav>
+<h1 class="text-2xl font-extrabold text-navy dark:text-white">Grade: <%= attempt.quiz_title %></h1>
+<p class="text-sm text-gray-500 mb-6">Student: <%= attempt.student_name %> · Attempt #<%= attempt.attempt_no %> · Submitted <%= attempt.submitted_at ? fmtDateTime(attempt.submitted_at) : '—' %></p>
+
+<form method="post" action="/admin/attempts/<%= attempt.id %>/grade" class="space-y-4 max-w-3xl">
+  <% questions.forEach((q, i) => { const given = answers['q' + q.id]; const correct = JSON.parse(q.correct_json); const auto = ['multiple_choice','multiple_select','true_false','fill_blank'].includes(q.qtype); %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 text-sm">
+      <p class="font-semibold"><%= i + 1 %>. <%= q.prompt %> <span class="text-xs text-gray-500">(<%= q.points %> pts · <%= q.qtype.replace(/_/g, ' ') %>)</span></p>
+      <p class="mt-2">Student answer: <strong><%= Array.isArray(given) ? given.join(', ') : (given || '—') %></strong></p>
+      <% if (auto) { %>
+        <p class="mt-1 text-gray-600 dark:text-gray-300">Answer key: <strong class="text-green-700 dark:text-green-300"><%= Array.isArray(correct) ? correct.join(' | ') : correct %></strong> <span class="text-xs text-gray-500">(auto-graded)</span></p>
+      <% } else { %>
+        <label class="block mt-2 font-semibold">Points awarded (max <%= q.points %>)
+          <input name="score_<%= q.id %>" type="number" min="0" max="<%= q.points %>" step="0.5" class="mt-1 w-32 border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-900">
+        </label>
+      <% } %>
+    </div>
+  <% }) %>
+  <button class="bg-gold text-navy font-bold px-6 py-3 rounded-lg">Save Grades</button>
+</form>

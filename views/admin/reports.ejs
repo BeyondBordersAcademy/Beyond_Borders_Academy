@@ -1,0 +1,55 @@
+<%- include('_nav', { active: '/admin/reports' }) %>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Academic Reports</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+
+<form method="get" action="/admin/reports" class="flex gap-2 mb-6 text-sm">
+  <select name="course_id" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800" onchange="this.form.submit()">
+    <option value="">All courses</option>
+    <% courses.forEach(c => { %><option value="<%= c.id %>" <%= courseId === c.id ? 'selected' : '' %>><%= c.title %></option><% }) %>
+  </select>
+</form>
+
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+  <% [
+    ['Active enrollments', report.totalEnrolled],
+    ['Completed', report.completed],
+    ['Avg. progress', report.avgProgress != null ? Math.round(report.avgProgress * 10) / 10 + '%' : '—'],
+    ['Submissions', report.submissions],
+    ['Avg. quiz score', report.avgQuiz != null ? Math.round(report.avgQuiz) + '%' : '—'],
+  ].forEach(([label, value]) => { %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border-t-2 border-gold">
+      <p class="text-2xl font-extrabold text-navy dark:text-white"><%= value %></p>
+      <p class="text-xs text-gray-500"><%= label %></p>
+    </div>
+  <% }) %>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-6">
+  <section class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+    <h2 class="font-bold text-navy dark:text-white mb-3">Enrollment by course</h2>
+    <table class="w-full text-sm">
+      <thead><tr class="text-left text-gray-500 border-b"><th class="py-1">Course</th><th class="py-1 text-right">Enrolled</th><th class="py-1 text-right">Avg. progress</th></tr></thead>
+      <tbody>
+        <% byCourse.forEach(c => { %>
+          <tr class="border-b border-gray-100 dark:border-gray-700">
+            <td class="py-1.5 pr-2"><%= c.title %></td>
+            <td class="py-1.5 text-right"><%= c.enrolled %></td>
+            <td class="py-1.5 text-right"><%= c.avg_progress != null ? Math.round(c.avg_progress * 10) / 10 + '%' : '—' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </section>
+  <section class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+    <h2 class="font-bold text-navy dark:text-white mb-3">Students who may need support</h2>
+    <% if (!atRisk.length) { %><p class="text-sm text-gray-500">Nobody flagged right now.</p><% } %>
+    <ul class="text-sm space-y-2">
+      <% atRisk.forEach(s => { %>
+        <li class="flex justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-1">
+          <a href="/admin/students/<%= s.id %>" class="underline"><%= s.name %></a>
+          <span class="text-gray-500 text-xs"><%= s.course_title %> · <%= s.progress_pct %>%<% if (s.pending) { %> · <%= s.pending %> pending<% } %></span>
+        </li>
+      <% }) %>
+    </ul>
+  </section>
+</div>

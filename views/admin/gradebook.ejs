@@ -1,0 +1,57 @@
+<%- include('_nav', { active: '/admin/courses' }) %>
+<nav class="text-xs text-gray-500 mb-4"><a href="/admin/courses" class="underline">Courses</a> › Gradebook</nav>
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-extrabold text-navy dark:text-white">Gradebook: <%= course.title %></h1>
+  <a href="/admin/gradebook/<%= course.id %>/export.csv" class="text-sm border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg">Export CSV</a>
+</div>
+<p class="text-xs text-gray-500 mt-1 mb-4">
+  <% const cats = cfg.categories || {}; %>
+  Weights: <%= Object.keys(cats).length ? Object.entries(cats).map(([k, v]) => k + ' ' + v + '%').join(' · ') : 'simple average of graded items' %>
+  — configure in <a href="/admin/courses/<%= course.id %>/edit" class="underline">course settings</a>.
+</p>
+
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead><tr class="text-left text-gray-500 border-b border-gray-200 dark:border-gray-700">
+      <th class="px-4 py-2">Student</th><th class="px-4 py-2">Graded</th><th class="px-4 py-2">Missing</th><th class="px-4 py-2 text-right">Overall</th>
+    </tr></thead>
+    <tbody>
+      <% rows.forEach(({ student, book }) => { %>
+        <tr class="border-b border-gray-100 dark:border-gray-700">
+          <td class="px-4 py-2"><a href="/admin/students/<%= student.id %>" class="underline font-semibold"><%= student.name %></a><br><span class="text-xs text-gray-500"><%= student.email %></span></td>
+          <td class="px-4 py-2"><%= book.gradedCount %> / <%= book.totalCount %></td>
+          <td class="px-4 py-2"><%= book.missingCount %></td>
+          <td class="px-4 py-2 text-right font-extrabold <%= book.overall == null ? 'text-gray-400' : book.overall >= 70 ? 'text-green-700 dark:text-green-300' : 'text-amber-700 dark:text-amber-300' %>"><%= book.overall == null ? '—' : book.overall + '%' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% if (!rows.length) { %><p class="p-4 text-sm text-gray-500">No enrolled students.</p><% } %>
+</div>
+
+<div class="mt-6 max-w-xl bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+  <h2 class="font-bold text-navy dark:text-white mb-2">Manual grade entry <span class="text-xs font-normal text-gray-500">(audit-logged)</span></h2>
+  <form method="post" action="/admin/gradebook/<%= course.id %>/override" class="grid grid-cols-2 gap-2 text-sm">
+    <select name="user_id" required class="col-span-2 border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+      <% rows.forEach(({ student }) => { %><option value="<%= student.id %>"><%= student.name %></option><% }) %>
+    </select>
+    <input name="points" type="number" step="0.5" required placeholder="Points earned" class="border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+    <input name="max_points" type="number" step="0.5" required placeholder="Max points" class="border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+    <input name="note" placeholder="Note (e.g. Participation — Week 3)" maxlength="300" class="col-span-2 border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+    <button class="col-span-2 bg-navy text-white px-4 py-2 rounded-lg">Record Grade</button>
+  </form>
+</div>
+
+<% rows.slice(0, 5).forEach(({ student, book }) => { %>
+  <details class="mt-3 bg-white dark:bg-gray-800 rounded-xl shadow px-4 py-3 text-sm">
+    <summary class="cursor-pointer font-semibold"><%= student.name %> — detail</summary>
+    <table class="w-full mt-2 text-xs">
+      <% book.items.forEach(it => { %>
+        <tr class="border-b border-gray-100 dark:border-gray-700">
+          <td class="py-1 pr-2"><%= it.title %></td><td class="py-1 pr-2 text-gray-500"><%= it.category %></td>
+          <td class="py-1 text-right font-semibold"><%= it.earned == null ? '—' : it.earned + ' / ' + it.max %></td>
+        </tr>
+      <% }) %>
+    </table>
+  </details>
+<% }) %>

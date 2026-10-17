@@ -1,0 +1,107 @@
+<%- include('_nav', { active: '/admin/courses' }) %>
+<nav class="text-xs text-gray-500 mb-4"><a href="/admin/courses" class="underline">Courses</a> › Builder</nav>
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-extrabold text-navy dark:text-white">Course Builder: <%= c.title %></h1>
+  <div class="flex gap-2 text-sm">
+    <a href="/admin/courses/<%= c.id %>/edit" class="border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded">Settings</a>
+    <a href="/admin/gradebook/<%= c.id %>" class="border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded">Gradebook</a>
+    <button id="saveOrder" class="bg-gold text-navy font-bold px-4 py-1.5 rounded hidden">Save New Order</button>
+  </div>
+</div>
+<p class="text-xs text-gray-500 mt-1 mb-4">Drag units and lessons to reorder, then save. <span class="font-semibold"><%= c.status %></span></p>
+
+<div class="max-w-3xl">
+  <form method="post" action="/admin/courses/<%= c.id %>/builder" class="flex gap-2 mb-6 text-sm">
+    <input type="hidden" name="action" value="add_unit">
+    <input name="title" placeholder="New unit title…" required maxlength="200" class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800">
+    <button class="bg-navy text-white px-4 py-2 rounded-lg">Add Unit</button>
+  </form>
+
+  <div id="units" class="space-y-4">
+    <% tree.forEach(u => { %>
+      <section class="unit bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700" data-unit-id="<%= u.id %>" draggable="true">
+        <div class="flex items-center gap-2 px-4 py-3 bg-navy/5 dark:bg-gray-700/50 rounded-t-xl cursor-move">
+          <span class="text-gray-400" aria-hidden="true">⠿</span>
+          <form method="post" action="/admin/courses/<%= c.id %>/builder" class="flex flex-1 gap-2 text-sm">
+            <input type="hidden" name="action" value="rename_unit"><input type="hidden" name="unit_id" value="<%= u.id %>">
+            <input name="title" value="<%= u.title %>" maxlength="200" class="flex-1 bg-transparent font-bold text-navy dark:text-white border-b border-transparent focus:border-gold outline-none">
+            <button class="text-xs underline">Rename</button>
+          </form>
+          <form method="post" action="/admin/courses/<%= c.id %>/builder" onsubmit="return confirm('Delete this empty unit?')">
+            <input type="hidden" name="action" value="delete_unit"><input type="hidden" name="unit_id" value="<%= u.id %>">
+            <button class="text-xs text-red-600">Delete</button>
+          </form>
+        </div>
+        <ul class="lessons p-3 space-y-2 min-h-[2rem]" data-unit-id="<%= u.id %>">
+          <% u.lessons.forEach(l => { %>
+            <li class="lesson flex items-center gap-2 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm cursor-move bg-white dark:bg-gray-800" data-lesson-id="<%= l.id %>" draggable="true">
+              <span class="text-gray-400" aria-hidden="true">⠿</span>
+              <span class="flex-1"><%= l.title %></span>
+              <span class="text-xs px-2 py-0.5 rounded <%= l.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' %>"><%= l.status %></span>
+              <a href="/admin/lessons/<%= l.id %>/edit" class="underline text-navy dark:text-gold">Edit</a>
+            </li>
+          <% }) %>
+        </ul>
+        <form method="post" action="/admin/courses/<%= c.id %>/builder" class="flex gap-2 px-4 pb-4 text-sm">
+          <input type="hidden" name="action" value="add_lesson"><input type="hidden" name="unit_id" value="<%= u.id %>">
+          <input name="title" placeholder="New lesson title…" required maxlength="200" class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-900 text-sm">
+          <button class="border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded-lg text-sm">+ Lesson</button>
+        </form>
+      </section>
+    <% }) %>
+  </div>
+</div>
+
+<script>
+(function () {
+  const unitsEl = document.getElementById('units');
+  const saveBtn = document.getElementById('saveOrder');
+  let dragEl = null, dragType = null;
+
+  function markDirty() { saveBtn.classList.remove('hidden'); }
+
+  document.querySelectorAll('.unit').forEach(sec => {
+    sec.addEventListener('dragstart', e => {
+      if (e.target.closest('.lesson')) return;
+      dragEl = sec; dragType = 'unit'; e.dataTransfer.effectAllowed = 'move';
+    });
+    sec.addEventListener('dragover', e => {
+      if (dragType !== 'unit' || !dragEl) return;
+      e.preventDefault();
+      const after = [...unitsEl.querySelectorAll('.unit')].find(el => el !== dragEl && e.clientY < el.getBoundingClientRect().top + el.offsetHeight / 2);
+      if (after) unitsEl.insertBefore(dragEl, after); else unitsEl.appendChild(dragEl);
+      markDirty();
+    });
+    sec.addEventListener('dragend', () => { dragEl = null; dragType = null; });
+  });
+
+  document.querySelectorAll('.lesson').forEach(li => {
+    li.addEventListener('dragstart', e => { e.stopPropagation(); dragEl = li; dragType = 'lesson'; e.dataTransfer.effectAllowed = 'move'; });
+    li.addEventListener('dragend', e => { e.stopPropagation(); dragEl = null; dragType = null; });
+  });
+  document.querySelectorAll('.lessons').forEach(ul => {
+    ul.addEventListener('dragover', e => {
+      if (dragType !== 'lesson' || !dragEl) return;
+      e.preventDefault(); e.stopPropagation();
+      const after = [...ul.querySelectorAll('.lesson')].find(el => el !== dragEl && e.clientY < el.getBoundingClientRect().top + el.offsetHeight / 2);
+      if (after) ul.insertBefore(dragEl, after); else ul.appendChild(dragEl);
+      markDirty();
+    });
+  });
+
+  saveBtn.addEventListener('click', async () => {
+    const units = [...unitsEl.querySelectorAll('.unit')].map(s => s.dataset.unitId);
+    const lessons = {};
+    unitsEl.querySelectorAll('.unit').forEach(s => {
+      lessons[s.dataset.unitId] = [...s.querySelectorAll('.lesson')].map(li => li.dataset.lessonId);
+    });
+    const fd = new FormData();
+    fd.append('action', 'reorder');
+    fd.append('order_json', JSON.stringify({ units, lessons }));
+    const r = await fetch('/admin/courses/<%= c.id %>/builder', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (j.ok) { saveBtn.classList.add('hidden'); alert('Order saved.'); }
+    else alert('Could not save order.');
+  });
+})();
+</script>

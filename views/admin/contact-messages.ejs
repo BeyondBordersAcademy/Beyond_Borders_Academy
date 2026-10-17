@@ -1,0 +1,17 @@
+<%- include('_nav', { active: '/admin/contact-messages' }) %>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Contact Messages</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<div class="space-y-3 max-w-3xl">
+  <% list.forEach(m => { %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 text-sm <%= m.handled ? 'opacity-70' : 'border-l-4 border-gold' %>">
+      <div class="flex justify-between gap-2">
+        <p class="font-bold"><%= m.name %> <span class="font-normal text-gray-500 text-xs"><%= m.email %> · <%= fmtDateTime(m.created_at) %></span></p>
+        <% if (!m.handled) { %>
+          <form method="post" action="/admin/contact-messages/<%= m.id %>"><button class="text-xs underline">Mark handled</button></form>
+        <% } else { %><span class="text-xs text-green-700">Handled</span><% } %>
+      </div>
+      <p class="mt-2 whitespace-pre-line text-gray-700 dark:text-gray-300"><%= m.message %></p>
+    </div>
+  <% }) %>
+  <% if (!list.length) { %><p class="text-sm text-gray-500">No messages.</p><% } %>
+</div>

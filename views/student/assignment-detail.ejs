@@ -1,0 +1,78 @@
+<nav class="text-xs text-gray-500 mb-4"><a href="/assignments" class="underline">Assignments</a> › <%= a.title %></nav>
+
+<div class="grid lg:grid-cols-2 gap-6">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+    <h1 class="text-2xl font-extrabold text-navy dark:text-white"><%= a.title %></h1>
+    <p class="text-xs text-gray-500 mt-1"><%= a.course_title %> · <%= a.max_points %> points · Due: <%= a.due_at ? fmtDateTime(a.due_at) : 'No due date' %></p>
+    <div class="mt-4 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed"><%= a.instructions %></div>
+    <% if (a.rubric_text) { %>
+      <details class="mt-4 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+        <summary class="text-sm font-semibold cursor-pointer">Grading rubric</summary>
+        <p class="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line mt-2"><%= a.rubric_text %></p>
+      </details>
+    <% } %>
+    <% if (a.late_policy) { %><p class="mt-3 text-xs text-gray-500"><strong>Late policy:</strong> <%= a.late_policy %></p><% } %>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+    <h2 class="font-bold text-navy dark:text-white mb-3">My Submission</h2>
+    <% if (sub && sub.status === 'graded') { %>
+      <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-4 mb-4">
+        <p class="font-bold text-green-800 dark:text-green-200">Grade: <%= sub.grade %> / <%= a.max_points %></p>
+        <% if (sub.feedback) { %><p class="text-sm mt-2 whitespace-pre-line"><strong>Teacher feedback:</strong><br><%= sub.feedback %></p><% } %>
+      </div>
+    <% } else if (sub && sub.status === 'needs_revision') { %>
+      <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-4">
+        <p class="font-bold text-amber-800 dark:text-amber-200">Revision requested</p>
+        <% if (sub.feedback) { %><p class="text-sm mt-2 whitespace-pre-line"><%= sub.feedback %></p><% } %>
+      </div>
+    <% } else if (sub && ['submitted','under_review'].includes(sub.status)) { %>
+      <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-4 text-sm">
+        Your work is <strong><%= sub.status.replace('_',' ') %></strong>. You'll be notified when it's graded.
+      </div>
+    <% } %>
+
+    <% const canEdit = !sub || sub.status === 'draft' || (sub.status === 'needs_revision'); %>
+    <% if (canEdit) { %>
+      <form method="post" action="/assignments/<%= a.id %>/submit" enctype="multipart/form-data" class="space-y-4">
+        <% if (formats.includes('text')) { %>
+          <div>
+            <label for="body_text" class="block text-sm font-semibold mb-1">Written answer</label>
+            <textarea id="body_text" name="body_text" rows="8" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm"><%= sub ? sub.body_text : '' %></textarea>
+          </div>
+        <% } %>
+        <% if (formats.includes('file')) { %>
+          <div>
+            <label for="file" class="block text-sm font-semibold mb-1">Attach a file</label>
+            <input id="file" type="file" name="file" class="text-sm">
+            <% if (sub && sub.file_path) { %><p class="text-xs text-gray-500 mt-1">Current file will be replaced if you upload a new one.</p><% } %>
+          </div>
+        <% } %>
+        <% if (formats.includes('audio')) { %>
+          <div>
+            <label for="audio" class="block text-sm font-semibold mb-1">Record or upload audio</label>
+            <input id="audio" type="file" name="audio" accept="audio/*" class="text-sm">
+            <p class="text-xs text-gray-500 mt-1">You can record on your phone and upload the audio file here.</p>
+          </div>
+        <% } %>
+        <div class="flex gap-2">
+          <button name="action" value="save_draft" class="border border-gray-300 dark:border-gray-600 px-4 py-2.5 rounded-lg text-sm">Save Draft</button>
+          <button name="action" value="submit" class="bg-gold text-navy font-bold px-6 py-2.5 rounded-lg text-sm hover:bg-gold-600 hover:text-white">Submit for Grading</button>
+        </div>
+      </form>
+    <% } else if (sub) { %>
+      <div class="text-sm text-gray-600 dark:text-gray-300">
+        <p><strong>Status:</strong> <%= sub.status.replace('_',' ') %></p>
+        <% if (sub.body_text) { %><p class="mt-2 font-semibold">Your answer:</p><p class="whitespace-pre-line border border-gray-100 dark:border-gray-700 rounded p-3 mt-1"><%= sub.body_text %></p><% } %>
+        <% if (!a.resubmission_allowed && sub.status !== 'needs_revision') { %><p class="text-xs text-gray-500 mt-3">Resubmission is not allowed for this assignment.</p><% } %>
+      </div>
+    <% } %>
+
+    <% if (history.length) { %>
+      <h3 class="font-semibold text-sm mt-6 mb-2">Submission history</h3>
+      <ul class="text-xs text-gray-500 space-y-1">
+        <% history.forEach(h => { %><li><%= h.status %> — <%= fmtDateTime(h.at) %><%= h.grade != null ? ' — grade: ' + h.grade : '' %></li><% }) %>
+      </ul>
+    <% } %>
+  </div>
+</div>

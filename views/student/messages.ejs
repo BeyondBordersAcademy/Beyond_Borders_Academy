@@ -1,0 +1,44 @@
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Messages</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<div class="grid md:grid-cols-3 gap-6">
+  <aside class="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+    <h2 class="font-bold text-sm mb-2">Conversations</h2>
+    <% if (!convos.length && !staff.length) { %><p class="text-xs text-gray-500">No conversations yet.</p><% } %>
+    <ul class="space-y-1 text-sm">
+      <% convos.forEach(c => { %>
+        <li><a href="/messages?with=<%= c.id %>" class="flex justify-between gap-2 px-2 py-1.5 rounded <%= withId === c.id ? 'bg-gold/20 font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-700' %>">
+          <span><%= c.name %></span><% if (c.unread) { %><span class="bg-red-600 text-white text-xs rounded-full px-1.5"><%= c.unread %></span><% } %>
+        </a></li>
+      <% }) %>
+    </ul>
+    <h2 class="font-bold text-sm mt-4 mb-2">Message your teacher</h2>
+    <ul class="space-y-1 text-sm">
+      <% staff.filter(s => !convos.find(c => c.id === s.id)).forEach(s => { %>
+        <li><a href="/messages?with=<%= s.id %>" class="block px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700"><%= s.name %></a></li>
+      <% }) %>
+    </ul>
+  </aside>
+  <section class="md:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+    <% if (!withId) { %>
+      <p class="text-sm text-gray-500">Select a conversation to read and reply.</p>
+    <% } else { %>
+      <div class="space-y-3 max-h-96 overflow-y-auto mb-4" id="thread">
+        <% thread.forEach(m => { const mine = m.from_user_id === user.id; %>
+          <div class="flex <%= mine ? 'justify-end' : 'justify-start' %>">
+            <div class="max-w-[80%] rounded-xl px-3 py-2 text-sm <%= mine ? 'bg-navy text-white' : 'bg-gray-100 dark:bg-gray-700' %>">
+              <p class="whitespace-pre-line"><%= m.body %></p>
+              <p class="text-[11px] opacity-70 mt-1"><%= fmtDateTime(m.created_at) %></p>
+            </div>
+          </div>
+        <% }) %>
+        <% if (!thread.length) { %><p class="text-sm text-gray-500">No messages yet. Say hello!</p><% } %>
+      </div>
+      <form method="post" action="/messages" class="flex gap-2">
+        <input type="hidden" name="to_user_id" value="<%= withId %>">
+        <label for="mbody" class="sr-only">Message</label>
+        <input id="mbody" name="body" required maxlength="5000" placeholder="Write your message…" class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm">
+        <button class="bg-navy text-white px-5 py-2 rounded-lg text-sm hover:bg-navy-800">Send</button>
+      </form>
+    <% } %>
+  </section>
+</div>

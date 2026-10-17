@@ -1,0 +1,62 @@
+<%- include('_nav', { active: '/admin/certificates' }) %>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Certificates</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+
+<div class="max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow p-6 mb-6">
+  <h2 class="font-bold text-navy dark:text-white mb-3">Issue a certificate</h2>
+  <form method="post" action="/admin/certificates/issue" class="grid sm:grid-cols-2 gap-3 text-sm" id="issueForm">
+    <div><label class="block font-semibold mb-1">Student (by email)</label>
+      <input name="student_email" id="studentEmail" required placeholder="student@example.com" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+      <input type="hidden" name="user_id" id="userId"></div>
+    <div><label class="block font-semibold mb-1">Course</label>
+      <select name="course_id" required class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+        <% courses.forEach(c => { %><option value="<%= c.id %>"><%= c.title %></option><% }) %>
+      </select></div>
+    <label class="flex items-center gap-2 text-xs sm:col-span-2"><input type="checkbox" name="force" value="1" class="accent-[#C6A34B]"> Issue anyway even if requirements aren't met (audit-logged override)</label>
+    <div class="sm:col-span-2"><button class="bg-gold text-navy font-bold px-6 py-2.5 rounded-lg">Issue Certificate</button></div>
+  </form>
+  <p class="text-xs text-gray-500 mt-2">Default requirement: 100% lesson progress and overall grade ≥ 70% (or no graded items yet). Certificates include a unique code, QR code, and verification URL.</p>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead><tr class="text-left text-gray-500 border-b border-gray-200 dark:border-gray-700">
+      <th class="px-4 py-2">Code</th><th class="px-4 py-2">Student</th><th class="px-4 py-2">Course</th><th class="px-4 py-2">Issued</th><th class="px-4 py-2">Status</th><th class="px-4 py-2"></th>
+    </tr></thead>
+    <tbody>
+      <% certs.forEach(c => { %>
+        <tr class="border-b border-gray-100 dark:border-gray-700">
+          <td class="px-4 py-2 font-mono text-xs font-bold"><%= c.code %></td>
+          <td class="px-4 py-2"><%= c.student_name %></td>
+          <td class="px-4 py-2"><%= c.course_title %></td>
+          <td class="px-4 py-2 text-gray-500"><%= fmtDate(c.issued_at) %></td>
+          <td class="px-4 py-2"><span class="text-xs px-2 py-0.5 rounded <%= c.status === 'valid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>"><%= c.status %></span></td>
+          <td class="px-4 py-2 whitespace-nowrap">
+            <a href="/verify/<%= c.code %>" target="_blank" class="underline text-xs mr-2">Verify</a>
+            <% if (c.status === 'valid') { %>
+              <form method="post" action="/admin/certificates/<%= c.id %>/revoke" class="inline" onsubmit="return confirm('Revoke this certificate? This is audit-logged.')"><button class="text-red-600 text-xs underline">Revoke</button></form>
+              <form method="post" action="/admin/certificates/<%= c.id %>/reissue" class="inline ml-2" onsubmit="return confirm('Reissue? The old code will be revoked and a new one generated.')"><button class="text-xs underline">Reissue</button></form>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% if (!certs.length) { %><p class="p-4 text-sm text-gray-500">No certificates issued yet.</p><% } %>
+</div>
+
+<script>
+// Resolve student email -> user id via a tiny lookup against the students table page is overkill;
+// instead, accept email and look it up server-side. We patch the form to send user_id by email lookup:
+document.getElementById('issueForm').addEventListener('submit', async (e) => {
+  const email = document.getElementById('studentEmail').value.trim();
+  const uidField = document.getElementById('userId');
+  if (uidField.value) return; // already resolved
+  e.preventDefault();
+  const r = await fetch('/admin/api/student-by-email?email=' + encodeURIComponent(email));
+  const j = await r.json();
+  if (!j.ok) { alert('No active student found with that email.'); return; }
+  uidField.value = j.id;
+  e.target.submit();
+});
+</script>

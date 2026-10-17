@@ -1,0 +1,31 @@
+<%- include('_nav', { active: '/admin/audit' }) %>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Audit Log</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<form method="get" action="/admin/audit" class="flex gap-2 mb-4 text-sm max-w-md">
+  <input name="q" value="<%= q %>" placeholder="Search action, details, actor…" class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800">
+  <button class="bg-navy text-white px-4 py-2 rounded-lg">Search</button>
+</form>
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-x-auto">
+  <table class="w-full text-xs">
+    <thead><tr class="text-left text-gray-500 border-b border-gray-200 dark:border-gray-700">
+      <th class="px-4 py-2">When</th><th class="px-4 py-2">Actor</th><th class="px-4 py-2">Action</th><th class="px-4 py-2">Details</th>
+    </tr></thead>
+    <tbody>
+      <% logs.forEach(l => { %>
+        <tr class="border-b border-gray-100 dark:border-gray-700">
+          <td class="px-4 py-2 whitespace-nowrap text-gray-500"><%= fmtDateTime(l.created_at) %></td>
+          <td class="px-4 py-2"><%= l.actor || '—' %></td>
+          <td class="px-4 py-2 font-mono"><%= l.action %></td>
+          <td class="px-4 py-2 text-gray-600 dark:text-gray-300"><%= l.details %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% if (pages > 1) { %>
+  <div class="mt-4 flex gap-2 text-sm">
+    <% for (let p = 1; p <= Math.min(pages, 20); p++) { %>
+      <a href="/admin/audit?q=<%= encodeURIComponent(q) %>&page=<%= p %>" class="px-3 py-1 rounded <%= p === page ? 'bg-navy text-white' : 'border border-gray-300 dark:border-gray-600' %>"><%= p %></a>
+    <% } %>
+  </div>
+<% } %>

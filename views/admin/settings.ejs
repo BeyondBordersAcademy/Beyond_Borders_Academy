@@ -1,0 +1,84 @@
+<%- include('_nav', { active: '/admin/settings' }) %>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Academy Settings</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+
+<div class="grid lg:grid-cols-2 gap-6">
+  <form method="post" action="/admin/settings" class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 space-y-4 text-sm">
+    <h2 class="font-bold text-navy dark:text-white text-base">General</h2>
+    <div><label class="block font-semibold mb-1">Academy name</label>
+      <input name="site_name" value="<%= settings.site_name %>" maxlength="120" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <div><label class="block font-semibold mb-1">Tagline</label>
+      <input name="tagline" value="<%= settings.tagline %>" maxlength="160" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="block font-semibold mb-1">Contact email</label>
+        <input name="contact_email" value="<%= settings.contact_email %>" maxlength="160" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+      <div><label class="block font-semibold mb-1">Phone</label>
+        <input name="contact_phone" value="<%= settings.contact_phone %>" maxlength="60" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    </div>
+    <div><label class="block font-semibold mb-1">Address</label>
+      <input name="address" value="<%= settings.address %>" maxlength="300" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+
+    <h2 class="font-bold text-navy dark:text-white text-base pt-2">Homepage content</h2>
+    <div><label class="block font-semibold mb-1">Hero headline</label>
+      <input name="homepage_hero_headline" value="<%= settings.homepage_hero_headline %>" maxlength="200" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <div><label class="block font-semibold mb-1">Hero subheadline</label>
+      <textarea name="homepage_hero_sub" rows="2" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"><%= settings.homepage_hero_sub %></textarea></div>
+    <div><label class="block font-semibold mb-1">Mission statement</label>
+      <textarea name="homepage_mission" rows="5" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"><%= settings.homepage_mission %></textarea></div>
+    <div><label class="block font-semibold mb-1">Core values (comma-separated)</label>
+      <input name="homepage_values" value="<%= settings.homepage_values %>" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+
+    <h2 class="font-bold text-navy dark:text-white text-base pt-2">Email (SMTP)</h2>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="block font-semibold mb-1">SMTP host</label><input name="smtp_host" value="<%= settings.smtp_host %>" placeholder="e.g. smtp.gmail.com" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+      <div><label class="block font-semibold mb-1">Port</label><input name="smtp_port" value="<%= settings.smtp_port %>" placeholder="587" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+      <div><label class="block font-semibold mb-1">Username</label><input name="smtp_user" value="<%= settings.smtp_user %>" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+      <div><label class="block font-semibold mb-1">Password</label><input name="smtp_pass" type="password" value="<%= settings.smtp_pass %>" autocomplete="new-password" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+      <div class="col-span-2"><label class="block font-semibold mb-1">From address</label><input name="smtp_from" value="<%= settings.smtp_from %>" placeholder="Academy <info@example.com>" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    </div>
+    <p class="text-xs <%= settings.smtp_host ? 'text-green-700' : 'text-amber-700' %>">
+      Status: <%= settings.smtp_host ? 'SMTP host configured — email delivery will be wired to a provider in a later phase. Until then, messages are logged and in-app notifications are used.' : 'Not configured — emails are logged to the server console and in-app notifications are used instead.' %>
+    </p>
+    <button class="bg-gold text-navy font-bold px-6 py-2.5 rounded-lg">Save Settings</button>
+  </form>
+
+  <div class="space-y-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 text-sm">
+      <h2 class="font-bold text-navy dark:text-white text-base mb-2">💳 Payments (Stripe)</h2>
+      <p class="inline-block text-xs font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 mb-2">Not configured</p>
+      <p class="text-gray-600 dark:text-gray-300">Online payments are not enabled in Phase 1. Paid courses currently require manual enrollment by you.</p>
+      <ol class="list-decimal ml-5 mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+        <li>Create a Stripe account at stripe.com and get your publishable + secret keys.</li>
+        <li>Ask your developer (or Remy) to add the Stripe keys to the server configuration and enable the checkout flow.</li>
+        <li>Set course prices in each course's settings; students will then pay at enrollment.</li>
+      </ol>
+      <p class="text-xs text-gray-500 mt-2">Card details are never stored by the academy — Stripe handles payment data directly.</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 text-sm">
+      <h2 class="font-bold text-navy dark:text-white text-base mb-2">🤖 AI Teaching Assistant</h2>
+      <p class="inline-block text-xs font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 mb-2">Not configured</p>
+      <p class="text-gray-600 dark:text-gray-300">AI lesson generation, worksheet creation, and feedback assistance arrive in Phase 3.</p>
+      <ol class="list-decimal ml-5 mt-2 space-y-1 text-gray-600 dark:text-gray-300">
+        <li>Obtain an API key from an AI provider.</li>
+        <li>Ask your developer to store it as a server-side secret (never in browser code) and enable the AI assistant panel.</li>
+      </ol>
+      <p class="text-xs text-gray-500 mt-2">Until then, no AI features are shown as working — nothing is simulated.</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 text-sm">
+      <h2 class="font-bold text-navy dark:text-white text-base mb-2">🎥 Live Classes (Video)</h2>
+      <p class="inline-block text-xs font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 mb-2">Not configured</p>
+      <p class="text-gray-600 dark:text-gray-300">Live video integration (Zoom / Google Meet) is planned for Phase 2. For now, schedule sessions manually and paste meeting links into announcements or messages.</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 text-sm">
+      <h2 class="font-bold text-navy dark:text-white text-base mb-2">🔐 Data & Backups</h2>
+      <ul class="list-disc ml-5 space-y-1 text-gray-600 dark:text-gray-300">
+        <li>Database file: <code class="text-xs">data/academy.db</code> on this server.</li>
+        <li>Back up this file regularly (e.g. daily automated copy to separate storage).</li>
+        <li>Student records are preserved when courses are updated or archived; deletion of courses with enrollments is blocked.</li>
+      </ul>
+    </div>
+  </div>
+</div>

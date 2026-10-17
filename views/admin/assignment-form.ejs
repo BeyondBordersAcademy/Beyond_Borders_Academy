@@ -1,0 +1,39 @@
+<%- include('_nav', { active: '/admin/assignments' }) %>
+<h1 class="text-2xl font-extrabold text-navy dark:text-white">New Assignment</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<div class="max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+  <form method="post" action="/admin/assignments" class="space-y-4 text-sm">
+    <div><label class="block font-semibold mb-1">Course *</label>
+      <select name="course_id" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+        <% courses.forEach(c => { %><option value="<%= c.id %>"><%= c.title %></option><% }) %>
+      </select></div>
+    <div><label class="block font-semibold mb-1">Title *</label>
+      <input name="title" required maxlength="200" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <div><label class="block font-semibold mb-1">Instructions</label>
+      <textarea name="instructions" rows="5" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></textarea></div>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="block font-semibold mb-1">Due date</label>
+        <input name="due_at" type="datetime-local" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+      <div><label class="block font-semibold mb-1">Max points</label>
+        <input name="max_points" type="number" min="1" step="1" value="100" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+      <div><label class="block font-semibold mb-1">Category</label>
+        <select name="category" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+          <% ['assignments','quizzes','exams','participation'].forEach(x => { %><option><%= x %></option><% }) %>
+        </select></div>
+      <div><label class="block font-semibold mb-1">Weight (optional)</label>
+        <input name="weight" type="number" min="0" step="0.1" placeholder="e.g. 2" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    </div>
+    <div>
+      <span class="block font-semibold mb-1">Submission formats</span>
+      <label class="inline-flex items-center gap-1 mr-4"><input type="checkbox" name="fmt_text" checked class="accent-[#C6A34B]"> Typed text</label>
+      <label class="inline-flex items-center gap-1 mr-4"><input type="checkbox" name="fmt_file" class="accent-[#C6A34B]"> File upload</label>
+      <label class="inline-flex items-center gap-1"><input type="checkbox" name="fmt_audio" class="accent-[#C6A34B]"> Audio upload</label>
+    </div>
+    <div><label class="block font-semibold mb-1">Rubric</label>
+      <textarea name="rubric_text" rows="4" placeholder="Criteria and point breakdown…" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></textarea></div>
+    <div><label class="block font-semibold mb-1">Late-submission policy</label>
+      <input name="late_policy" maxlength="300" placeholder="e.g. 10% deduction per day late" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <label class="flex items-center gap-2"><input type="checkbox" name="resubmission_allowed" class="accent-[#C6A34B]"> Allow resubmission</label>
+    <button class="bg-gold text-navy font-bold px-6 py-2.5 rounded-lg">Create Assignment</button>
+  </form>
+</div>

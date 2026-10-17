@@ -1,0 +1,20 @@
+<%- include('_nav', { active: '/admin/banks' }) %>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Question Banks</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<div class="max-w-xl bg-white dark:bg-gray-800 rounded-2xl shadow p-6 mb-6">
+  <h2 class="font-bold text-navy dark:text-white mb-3">New bank</h2>
+  <form method="post" action="/admin/banks" class="flex flex-wrap gap-2 text-sm">
+    <input name="name" required placeholder="e.g. A1 Grammar — Present Simple" maxlength="120" class="flex-1 min-w-[200px] border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+    <input name="level" placeholder="Level" maxlength="10" class="w-24 border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+    <input name="topic" placeholder="Topic" maxlength="120" class="w-40 border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+    <button class="bg-gold text-navy font-bold px-4 py-2 rounded-lg">Create</button>
+  </form>
+</div>
+<div class="grid gap-3 sm:grid-cols-2">
+  <% banks.forEach(b => { %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+      <p class="font-bold text-sm"><%= b.name %></p>
+      <p class="text-xs text-gray-500 mt-1">Level: <%= b.level || '—' %> · Topic: <%= b.topic || '—' %> · <%= b.qcount %> question(s) in bank</p>
+    </div>
+  <% }) %>
+</div>

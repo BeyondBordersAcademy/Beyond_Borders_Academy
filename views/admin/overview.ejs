@@ -1,0 +1,44 @@
+<%- include('_nav', { active: '/admin' }) %>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Academy Overview</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <% [
+    ['Students', stats.students, stats.activeStudents + ' active'],
+    ['Published courses', stats.courses, stats.draftCourses + ' drafts'],
+    ['Active enrollments', stats.enrollments, ''],
+    ['Awaiting grading', stats.pendingGrading, 'submissions + attempts'],
+    ['Certificates issued', stats.certificates, ''],
+    ['Unread contact msgs', stats.unreadContact, ''],
+  ].forEach(([label, value, sub]) => { %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 border-t-2 border-gold">
+      <p class="text-3xl font-extrabold text-navy dark:text-white"><%= value %></p>
+      <p class="text-sm text-gray-500"><%= label %><%= sub ? ' · ' + sub : '' %></p>
+    </div>
+  <% }) %>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-6 mt-8">
+  <section class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+    <h2 class="font-bold text-navy dark:text-white mb-3">Students who may need support <span class="text-xs font-normal text-gray-500">(progress &lt; 25%)</span></h2>
+    <% if (!atRisk.length) { %><p class="text-sm text-gray-500">No at-risk students right now.</p><% } %>
+    <ul class="text-sm space-y-2">
+      <% atRisk.forEach(s => { %>
+        <li class="flex justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-1">
+          <a href="/admin/students/<%= s.id %>" class="underline"><%= s.name %></a>
+          <span class="text-gray-500"><%= s.course_title %> — <%= s.progress_pct %>%</span>
+        </li>
+      <% }) %>
+    </ul>
+    <a href="/admin/reports" class="text-xs underline mt-3 inline-block">Full reports →</a>
+  </section>
+  <section class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+    <h2 class="font-bold text-navy dark:text-white mb-3">Recent activity</h2>
+    <ul class="text-xs text-gray-600 dark:text-gray-300 space-y-1.5">
+      <% recent.forEach(r => { %>
+        <li><span class="text-gray-400"><%= fmtDateTime(r.created_at) %></span> — <strong><%= r.actor || 'system' %></strong>: <%= r.action %> <span class="text-gray-500"><%= (r.details || '').slice(0, 80) %></span></li>
+      <% }) %>
+    </ul>
+    <a href="/admin/audit" class="text-xs underline mt-3 inline-block">Audit log →</a>
+  </section>
+</div>

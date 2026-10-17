@@ -1,0 +1,103 @@
+<%- include('_nav', { active: '/admin/courses' }) %>
+<nav class="text-xs text-gray-500 mb-4"><a href="/admin/courses" class="underline">Courses</a> › <a href="/admin/courses/<%= l.course_id %>/builder" class="underline"><%= l.course_title %></a> › Edit Lesson</nav>
+
+<div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+  <h1 class="text-2xl font-extrabold text-navy dark:text-white">Edit Lesson</h1>
+  <a href="/admin/lessons/<%= l.id %>/edit?preview=1" class="text-sm border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg">👁 Preview as Student</a>
+</div>
+
+<% if (preview) { %>
+  <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 rounded-xl p-3 mb-4 text-sm flex justify-between items-center">
+    <span><strong>Student preview</strong> — this is how the lesson looks to students.</span>
+    <a href="/admin/lessons/<%= l.id %>/edit" class="underline">Back to editor</a>
+  </div>
+  <article class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 sm:p-8 max-w-3xl">
+    <h2 class="text-2xl font-extrabold text-navy dark:text-white"><%= l.title %></h2>
+    <div class="prose-lesson mt-4"><%- l.body_html %></div>
+    <% if (l.body_es) { %>
+      <details class="mt-6 border border-gold/40 rounded-xl p-4 bg-gold/5">
+        <summary class="font-semibold cursor-pointer text-sm">🇪🇸 Ver explicación en español</summary>
+        <div class="prose-lesson mt-3"><%- l.body_es %></div>
+      </details>
+    <% } %>
+  </article>
+<% } else { %>
+  <form method="post" action="/admin/lessons/<%= l.id %>/edit" class="max-w-4xl space-y-5" id="lessonForm">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 space-y-4">
+      <div class="grid sm:grid-cols-3 gap-3">
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-semibold mb-1" for="title">Lesson title</label>
+          <input id="title" name="title" value="<%= l.title %>" required maxlength="200" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1" for="status">Status</label>
+          <select id="status" name="status" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+            <option value="draft" <%= l.status === 'draft' ? 'selected' : '' %>>Draft</option>
+            <option value="published" <%= l.status === 'published' ? 'selected' : '' %>>Published</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Lesson content (English)</label>
+        <div class="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+          <div class="flex flex-wrap gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1.5 text-sm" role="toolbar" aria-label="Formatting">
+            <button type="button" data-cmd="bold" class="px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 font-bold" title="Bold">B</button>
+            <button type="button" data-cmd="italic" class="px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 italic" title="Italic">I</button>
+            <button type="button" data-cmd="underline" class="px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 underline" title="Underline">U</button>
+            <button type="button" data-cmd="formatBlock" data-val="h2" class="px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600" title="Heading">H2</button>
+            <button type="button" data-cmd="insertUnorderedList" class="px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600" title="Bullet list">• List</button>
+            <button type="button" data-cmd="insertOrderedList" class="px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600" title="Numbered list">1. List</button>
+            <button type="button" id="insTable" class="px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600" title="Insert vocabulary table">▦ Table</button>
+            <button type="button" id="insLink" class="px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600" title="Insert link">🔗 Link</button>
+          </div>
+          <div id="editor" contenteditable="true" class="prose-lesson min-h-[280px] px-4 py-3 bg-white dark:bg-gray-900 outline-none" aria-label="Lesson content editor"><%- l.body_html %></div>
+        </div>
+        <textarea name="body_html" id="body_html" class="hidden"></textarea>
+        <p class="text-xs text-gray-500 mt-1">Tip: paste images via the Materials library, or describe where a file should be attached.</p>
+      </div>
+
+      <details class="border border-gold/40 rounded-xl p-4 bg-gold/5">
+        <summary class="font-semibold cursor-pointer text-sm">🇪🇸 Optional Spanish explanation</summary>
+        <div class="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden mt-3">
+          <div id="editorEs" contenteditable="true" class="prose-lesson min-h-[140px] px-4 py-3 bg-white dark:bg-gray-900 outline-none" aria-label="Spanish explanation editor"><%- l.body_es %></div>
+        </div>
+        <textarea name="body_es" id="body_es" class="hidden"></textarea>
+        <p class="text-xs text-gray-500 mt-1">Only the sections you choose — Spanish is never added automatically.</p>
+      </details>
+
+      <div class="flex gap-2">
+        <button class="bg-gold text-navy font-bold px-6 py-2.5 rounded-lg">Save Lesson</button>
+        <a href="/admin/courses/<%= l.course_id %>/builder" class="text-sm underline self-center">Cancel</a>
+      </div>
+    </div>
+  </form>
+  <form method="post" action="/admin/lessons/<%= l.id %>/delete" onsubmit="return confirm('Delete this lesson permanently?')" class="mt-4">
+    <button class="text-sm text-red-600 underline">Delete lesson</button>
+  </form>
+
+<script>
+(function () {
+  const ed = document.getElementById('editor');
+  document.querySelectorAll('[data-cmd]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      ed.focus();
+      document.execCommand(btn.dataset.cmd, false, btn.dataset.val || null);
+    });
+  });
+  document.getElementById('insTable').addEventListener('click', () => {
+    ed.focus();
+    document.execCommand('insertHTML', false,
+      '<table><tr><th>Word</th><th>Part of speech</th><th>Example</th></tr><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr></table><p></p>');
+  });
+  document.getElementById('insLink').addEventListener('click', () => {
+    const url = prompt('Link URL (https://…)');
+    if (url) { ed.focus(); document.execCommand('createLink', false, url); }
+  });
+  document.getElementById('lessonForm').addEventListener('submit', () => {
+    document.getElementById('body_html').value = ed.innerHTML;
+    document.getElementById('body_es').value = document.getElementById('editorEs').innerHTML;
+  });
+})();
+</script>
+<% } %>

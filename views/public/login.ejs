@@ -1,0 +1,22 @@
+<div class="max-w-md mx-auto">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-8">
+    <div class="flex justify-center mb-4"><%- include('../partials/logo', { size: 56 }) %></div>
+    <h1 class="text-2xl font-extrabold text-navy dark:text-white text-center">Log In</h1>
+    <p class="text-sm text-gray-500 text-center mt-1 mb-6"><%= tagline %></p>
+    <form method="post" action="/login" class="space-y-4">
+      <div>
+        <label for="email" class="block text-sm font-semibold mb-1">Email</label>
+        <input id="email" name="email" type="email" required autocomplete="email" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-semibold mb-1">Password</label>
+        <input id="password" name="password" type="password" required autocomplete="current-password" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+      </div>
+      <button class="w-full bg-navy text-white font-semibold py-3 rounded-lg hover:bg-navy-800">Log In</button>
+    </form>
+    <div class="mt-4 text-sm text-center space-y-1">
+      <p><a href="/forgot" class="text-navy dark:text-gold underline">Forgot your password?</a></p>
+      <p class="text-gray-500">New student? <a href="/register" class="text-navy dark:text-gold underline">Create an account</a></p>
+    </div>
+  </div>
+</div>

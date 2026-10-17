@@ -1,0 +1,50 @@
+<%- include('_nav', { active: '/admin/students' }) %>
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-3xl font-extrabold text-navy dark:text-white">Students</h1>
+  <div class="flex gap-2 text-sm">
+    <a href="/admin/students/new" class="bg-gold text-navy font-bold px-4 py-2 rounded-lg">+ New Student</a>
+    <a href="/admin/students/export.csv" class="border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg">Export CSV</a>
+  </div>
+</div>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+
+<form method="get" action="/admin/students" class="flex flex-wrap gap-2 mb-4 text-sm">
+  <input name="q" value="<%= q %>" placeholder="Search name or email…" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800">
+  <select name="status" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800">
+    <option value="">All statuses</option>
+    <% ['active','pending','suspended'].forEach(s => { %><option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= s %></option><% }) %>
+  </select>
+  <select name="level" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800">
+    <option value="">All levels</option>
+    <% ['A1','A2','B1','B2','C1','C2'].forEach(l => { %><option value="<%= l %>" <%= level === l ? 'selected' : '' %>><%= l %></option><% }) %>
+  </select>
+  <button class="bg-navy text-white px-4 py-2 rounded-lg">Filter</button>
+  <span class="text-xs text-gray-500 self-center"><%= total %> student(s)</span>
+</form>
+
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead><tr class="text-left text-gray-500 border-b border-gray-200 dark:border-gray-700">
+      <th class="px-4 py-2">Name</th><th class="px-4 py-2">Email</th><th class="px-4 py-2">Level</th><th class="px-4 py-2">Status</th><th class="px-4 py-2">Joined</th><th class="px-4 py-2"></th>
+    </tr></thead>
+    <tbody>
+      <% students.forEach(s => { %>
+        <tr class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+          <td class="px-4 py-2 font-semibold"><%= s.name %></td>
+          <td class="px-4 py-2 text-gray-500"><%= s.email %></td>
+          <td class="px-4 py-2"><%= s.cefr_level || '—' %></td>
+          <td class="px-4 py-2"><span class="text-xs px-2 py-0.5 rounded <%= s.status === 'active' ? 'bg-green-100 text-green-800' : s.status === 'suspended' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800' %>"><%= s.status %></span></td>
+          <td class="px-4 py-2 text-gray-500"><%= fmtDate(s.created_at) %></td>
+          <td class="px-4 py-2"><a href="/admin/students/<%= s.id %>" class="underline text-navy dark:text-gold">Manage</a></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% if (pages > 1) { %>
+  <div class="mt-4 flex gap-2 text-sm">
+    <% for (let p = 1; p <= pages; p++) { %>
+      <a href="/admin/students?q=<%= encodeURIComponent(q) %>&status=<%= status %>&level=<%= level %>&page=<%= p %>" class="px-3 py-1 rounded <%= p === page ? 'bg-navy text-white' : 'border border-gray-300 dark:border-gray-600' %>"><%= p %></a>
+    <% } %>
+  </div>
+<% } %>

@@ -1,0 +1,40 @@
+<div class="max-w-2xl mx-auto">
+  <h1 class="text-3xl font-extrabold text-navy dark:text-white">Contact Us</h1>
+  <div class="gold-underline w-16 mt-2 mb-6"></div>
+
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 sm:p-8">
+    <form method="post" action="/contact" class="space-y-4">
+      <div>
+        <label for="cname" class="block text-sm font-semibold mb-1">Your name</label>
+        <input id="cname" name="name" required maxlength="120" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+      </div>
+      <div>
+        <label for="cemail" class="block text-sm font-semibold mb-1">Email</label>
+        <input id="cemail" name="email" type="email" required maxlength="160" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+      </div>
+      <div>
+        <label for="cmessage" class="block text-sm font-semibold mb-1">Message</label>
+        <textarea id="cmessage" name="message" required rows="5" maxlength="5000" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></textarea>
+      </div>
+      <!-- honeypot -->
+      <div class="hidden" aria-hidden="true">
+        <label>Leave this empty<input type="text" name="company_website" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <button class="bg-navy text-white font-semibold px-6 py-3 rounded-lg hover:bg-navy-800">Send Message</button>
+    </form>
+  </div>
+
+  <div class="mt-6 text-sm text-gray-600 dark:text-gray-300">
+    <p>Email: <strong><%= contactEmail %></strong></p>
+    <p class="mt-1">We usually reply within 2 business days.</p>
+  </div>
+</div>
+<script>
+if (new URLSearchParams(location.search).get('sent')) {
+  const d = document.createElement('div');
+  d.className = 'max-w-2xl mx-auto mb-4 bg-green-100 text-green-800 rounded px-4 py-3 text-sm';
+  d.setAttribute('role', 'status');
+  d.textContent = 'Thank you! Your message was received. We will reply soon.';
+  document.querySelector('main').prepend(d);
+}
+</script>

@@ -1,0 +1,39 @@
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Course Catalog</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+
+<form method="get" action="/courses" class="mb-6 flex gap-2 max-w-xl" role="search">
+  <label for="q" class="sr-only">Search courses</label>
+  <input id="q" name="q" value="<%= q %>" placeholder="Search by title, level, or topic…"
+    class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-800">
+  <button class="bg-navy text-white px-5 py-2 rounded-lg hover:bg-navy-800">Search</button>
+</form>
+
+<% if (!courses.length) { %>
+  <p class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow text-gray-600 dark:text-gray-400">
+    No courses match your search. <a href="/courses" class="underline">View all courses</a>.
+  </p>
+<% } %>
+
+<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+  <% courses.forEach(c => { %>
+    <article class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden flex flex-col border border-gray-100 dark:border-gray-700">
+      <div class="bg-navy h-2"></div>
+      <div class="p-5 flex-1 flex flex-col">
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <% if (c.level) { %><span class="text-xs font-bold bg-gold/15 text-gold-600 dark:text-gold px-2 py-0.5 rounded"><%= c.level %></span><% } %>
+          <span class="text-xs text-gray-500 dark:text-gray-400"><%= c.format %></span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">· <%= c.instructor || 'Academy staff' %></span>
+        </div>
+        <h2 class="font-bold text-lg text-navy dark:text-white"><a href="/courses/<%= c.slug %>" class="hover:underline"><%= c.title %></a></h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mt-2 flex-1"><%= (c.description || '').slice(0, 160) %><%= (c.description || '').length > 160 ? '…' : '' %></p>
+        <% if (c.objectives) { %>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-2"><strong>You'll learn:</strong> <%= c.objectives.split('\n')[0].slice(0, 100) %>…</p>
+        <% } %>
+        <div class="mt-4 flex items-center justify-between">
+          <span class="font-semibold"><%= c.price_cents > 0 ? '$' + (c.price_cents/100).toFixed(2) : 'Free' %></span>
+          <a href="/courses/<%= c.slug %>" class="text-sm bg-navy text-white px-4 py-2 rounded hover:bg-navy-800">Details & enrollment</a>
+        </div>
+      </div>
+    </article>
+  <% }) %>
+</div>

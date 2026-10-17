@@ -1,0 +1,27 @@
+<%- include('_nav', { active: '/admin/quizzes' }) %>
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-3xl font-extrabold text-navy dark:text-white">Quizzes & Exams</h1>
+  <a href="/admin/quizzes/new" class="bg-gold text-navy font-bold px-4 py-2 rounded-lg text-sm">+ New Quiz</a>
+</div>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<form method="get" action="/admin/quizzes" class="flex gap-2 mb-4 text-sm">
+  <select name="course_id" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800" onchange="this.form.submit()">
+    <option value="">All courses</option>
+    <% courses.forEach(c => { %><option value="<%= c.id %>" <%= courseId === c.id ? 'selected' : '' %>><%= c.title %></option><% }) %>
+  </select>
+</form>
+<div class="space-y-2">
+  <% list.forEach(q => { %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+      <div>
+        <p class="font-semibold text-sm"><%= q.title %></p>
+        <p class="text-xs text-gray-500"><%= q.course_title %> · <%= q.qcount %> question(s) · <%= q.attempts_allowed %> attempt(s) · <%= q.category %></p>
+      </div>
+      <div class="flex gap-2 text-xs">
+        <a href="/admin/quizzes/<%= q.id %>/attempts" class="border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded">Attempts</a>
+        <a href="/admin/quizzes/<%= q.id %>/edit" class="bg-navy text-white px-3 py-1.5 rounded">Edit / Questions</a>
+      </div>
+    </div>
+  <% }) %>
+  <% if (!list.length) { %><p class="text-sm text-gray-500">No quizzes yet.</p><% } %>
+</div>

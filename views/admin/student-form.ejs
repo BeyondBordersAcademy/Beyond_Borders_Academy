@@ -1,0 +1,20 @@
+<%- include('_nav', { active: '/admin/students' }) %>
+<h1 class="text-2xl font-extrabold text-navy dark:text-white">New Student</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<div class="max-w-xl bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+  <form method="post" action="/admin/students" class="space-y-4">
+    <div><label class="block text-sm font-semibold mb-1" for="name">Full name</label>
+      <input id="name" name="name" required maxlength="120" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <div><label class="block text-sm font-semibold mb-1" for="email">Email</label>
+      <input id="email" name="email" type="email" required maxlength="160" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <div><label class="block text-sm font-semibold mb-1" for="password">Temporary password <span class="font-normal text-gray-500">(min. 8 chars)</span></label>
+      <input id="password" name="password" type="text" required minlength="8" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <div><label class="block text-sm font-semibold mb-1" for="cefr">CEFR level (optional)</label>
+      <select id="cefr" name="cefr_level" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+        <option value="">Not set</option><% ['A1','A2','B1','B2','C1','C2'].forEach(l => { %><option><%= l %></option><% }) %>
+      </select></div>
+    <div><label class="block text-sm font-semibold mb-1" for="notes">Private admin notes</label>
+      <textarea id="notes" name="admin_notes" rows="3" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm"></textarea></div>
+    <button class="bg-gold text-navy font-bold px-6 py-2.5 rounded-lg">Create Student</button>
+  </form>
+</div>

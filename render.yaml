@@ -1,0 +1,28 @@
+# Render Blueprint — Beyond Borders English Academy
+# Deploy: Render dashboard -> New -> Blueprint -> connect the GitHub repo containing this file.
+# Free plan, no credit card required. Fill in DATABASE_URL / SUPABASE_* in the
+# Render dashboard (or let Render prompt you); SESSION_SECRET is auto-generated.
+services:
+  - type: web
+    name: beyond-borders-academy
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: node app.js
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Postgres connection string (Supabase: Project Settings -> Database -> Connection string, URI)
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      # Supabase Storage for uploads (materials, submissions, certificates, avatars).
+      # Without these the app falls back to local disk (files are lost on redeploy).
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: academy-uploads

@@ -1,0 +1,12 @@
+<div class="max-w-md mx-auto">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-8">
+    <h1 class="text-2xl font-extrabold text-navy dark:text-white">Set a New Password</h1>
+    <form method="post" action="/reset/<%= token %>" class="space-y-4 mt-6">
+      <div>
+        <label for="password" class="block text-sm font-semibold mb-1">New password <span class="font-normal text-gray-500">(min. 8 characters)</span></label>
+        <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+      </div>
+      <button class="w-full bg-navy text-white font-semibold py-3 rounded-lg hover:bg-navy-800">Update Password</button>
+    </form>
+  </div>
+</div>

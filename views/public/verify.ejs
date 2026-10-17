@@ -1,0 +1,37 @@
+<div class="max-w-2xl mx-auto">
+  <h1 class="text-3xl font-extrabold text-navy dark:text-white">Certificate Verification</h1>
+  <div class="gold-underline w-16 mt-2 mb-6"></div>
+
+  <% if (!cert) { %>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-8 text-center">
+      <p class="text-5xl mb-4">🔍</p>
+      <h2 class="text-xl font-bold text-navy dark:text-white">Certificate not found</h2>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">No certificate exists with this code. Check the code and try again, or contact the academy.</p>
+      <form method="get" action="/verify/lookup" class="mt-6 flex gap-2 max-w-md mx-auto" onsubmit="event.preventDefault(); location.href='/verify/'+document.getElementById('vcode').value.trim().toUpperCase();">
+        <input id="vcode" placeholder="Enter certificate code" class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+        <button class="bg-navy text-white px-4 py-2 rounded-lg">Verify</button>
+      </form>
+    </div>
+  <% } else if (cert.status === 'revoked') { %>
+    <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-2xl p-8 text-center">
+      <p class="text-5xl mb-4">⛔</p>
+      <h2 class="text-xl font-bold text-red-800 dark:text-red-200">Certificate revoked</h2>
+      <p class="mt-2 text-sm">Certificate <strong><%= cert.code %></strong> was issued by <%= siteName %> but has been revoked and is no longer valid.</p>
+    </div>
+  <% } else { %>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow overflow-hidden">
+      <div class="bg-navy text-white px-6 py-5 flex items-center gap-3">
+        <span class="text-3xl">✅</span>
+        <div><h2 class="font-bold text-lg">Valid certificate</h2><p class="text-xs text-gray-300">Issued by <%= siteName %></p></div>
+      </div>
+      <dl class="p-6 space-y-3 text-sm">
+        <div class="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2"><dt class="text-gray-500">Certificate No.</dt><dd class="font-mono font-bold"><%= cert.code %></dd></div>
+        <div class="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2"><dt class="text-gray-500">Awarded to</dt><dd class="font-semibold"><%= cert.student_name %></dd></div>
+        <div class="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2"><dt class="text-gray-500">Course</dt><dd class="font-semibold"><%= cert.course_title %></dd></div>
+        <% if (cert.course_level) { %><div class="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2"><dt class="text-gray-500">Level</dt><dd class="font-semibold"><%= cert.course_level %></dd></div><% } %>
+        <div class="flex justify-between"><dt class="text-gray-500">Issued</dt><dd><%= fmtDate(cert.issued_at) %></dd></div>
+      </dl>
+      <p class="px-6 pb-6 text-xs text-gray-500 dark:text-gray-400">Only the information needed to authenticate this certificate is shown. This is an academy certificate of completion — not a government-recognized qualification or official CEFR certification.</p>
+    </div>
+  <% } %>
+</div>

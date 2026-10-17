@@ -1,0 +1,26 @@
+<div class="max-w-xl mx-auto">
+  <h1 class="text-3xl font-extrabold text-navy dark:text-white">My Profile</h1>
+  <div class="gold-underline w-16 mt-2 mb-6"></div>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 space-y-4">
+    <form method="post" action="/profile" class="space-y-4">
+      <div>
+        <label for="name" class="block text-sm font-semibold mb-1">Full name</label>
+        <input id="name" name="name" value="<%= user.name %>" required maxlength="120" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+      </div>
+      <div>
+        <label for="lang" class="block text-sm font-semibold mb-1">Preferred interface language</label>
+        <select id="lang" name="preferred_lang" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+          <option value="en" <%= user.preferred_lang === 'en' ? 'selected' : '' %>>English</option>
+          <option value="es" <%= user.preferred_lang === 'es' ? 'selected' : '' %>>Español (show Spanish explanations in lessons)</option>
+        </select>
+      </div>
+      <button class="bg-navy text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-navy-800">Save Changes</button>
+    </form>
+    <div class="border-t border-gray-100 dark:border-gray-700 pt-4 text-sm">
+      <p><strong>Email:</strong> <%= user.email %></p>
+      <p class="mt-1"><strong>Role:</strong> <%= user.role %> · <strong>Status:</strong> <%= user.status %></p>
+      <% if (user.cefr_level) { %><p class="mt-1"><strong>Level:</strong> <%= user.cefr_level %></p><% } %>
+      <p class="mt-3"><a href="/profile/password" class="text-navy dark:text-gold underline">Change password →</a></p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,9 @@
+node_modules/
+uploads/
+data/
+*.db
+*.db-shm
+*.db-wal
+.env
+/tmp/
+.DS_Store

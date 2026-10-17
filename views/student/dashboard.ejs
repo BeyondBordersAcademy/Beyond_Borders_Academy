@@ -1,0 +1,93 @@
+<div class="flex items-center justify-between flex-wrap gap-3">
+  <div>
+    <h1 class="text-3xl font-extrabold text-navy dark:text-white">Welcome back, <%= user.name.split(' ')[0] %>!</h1>
+    <p class="text-gray-600 dark:text-gray-400 text-sm mt-1">Here's your learning at a glance.</p>
+  </div>
+  <div class="flex gap-2 text-sm">
+    <a href="/notifications" class="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-lg">🔔 Notifications<% if (unread) { %> <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1.5"><%= unread %></span><% } %></a>
+    <a href="/messages" class="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-lg">✉️ Messages<% if (unreadMsgs) { %> <span class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full px-1.5"><%= unreadMsgs %></span><% } %></a>
+  </div>
+</div>
+
+<% if (!enrollments.length) { %>
+  <div class="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow p-8 text-center">
+    <p class="text-4xl mb-3">📚</p>
+    <h2 class="text-xl font-bold text-navy dark:text-white">You're not enrolled in any courses yet</h2>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Browse the catalog or take the placement test to find your starting level.</p>
+    <div class="mt-4 flex gap-3 justify-center">
+      <a href="/courses" class="bg-gold text-navy font-bold px-6 py-2.5 rounded-lg">Browse Courses</a>
+      <a href="/placement" class="border border-navy dark:border-gold text-navy dark:text-gold px-6 py-2.5 rounded-lg">Placement Test</a>
+    </div>
+  </div>
+<% } %>
+
+<% if (enrollments.length) { %>
+<section class="mt-8">
+  <h2 class="text-xl font-bold text-navy dark:text-white mb-4">My Courses</h2>
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <% enrollments.forEach(e => { %>
+      <article class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div class="bg-navy h-1.5"></div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-1">
+            <% if (e.level) { %><span class="text-xs font-bold bg-gold/15 text-gold-600 dark:text-gold px-2 py-0.5 rounded"><%= e.level %></span><% } %>
+            <span class="text-xs text-gray-500"><%= e.status %></span>
+          </div>
+          <h3 class="font-bold text-navy dark:text-white"><%= e.title %></h3>
+          <p class="text-xs text-gray-500 mt-1">Instructor: <%= e.instructor || 'Academy staff' %></p>
+          <div class="mt-3">
+            <div class="flex justify-between text-xs mb-1"><span>Progress</span><span class="font-bold"><%= e.progress_pct %>%</span></div>
+            <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full" role="progressbar" aria-valuenow="<%= e.progress_pct %>" aria-valuemin="0" aria-valuemax="100" aria-label="Course progress">
+              <div class="h-2 bg-gold rounded-full" style="width:<%= Math.min(100, e.progress_pct) %>%"></div>
+            </div>
+          </div>
+          <a href="/courses/<%= e.slug %>/learn" class="block text-center mt-4 bg-navy text-white text-sm font-semibold py-2.5 rounded-lg hover:bg-navy-800">Resume Learning</a>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</section>
+<% } %>
+
+<div class="grid md:grid-cols-2 gap-6 mt-8">
+  <section class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+    <h2 class="font-bold text-navy dark:text-white mb-3">📝 Upcoming Assignments</h2>
+    <% if (!upcomingAssignments.length) { %><p class="text-sm text-gray-500">Nothing due. Nice work!</p><% } %>
+    <ul class="space-y-2 text-sm">
+      <% upcomingAssignments.forEach(a => { %>
+        <li class="flex justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-2">
+          <a href="/assignments/<%= a.id %>" class="text-navy dark:text-gold underline"><%= a.title %></a>
+          <span class="text-gray-500 whitespace-nowrap"><%= a.due_at ? fmtDate(a.due_at) : 'No due date' %></span>
+        </li>
+      <% }) %>
+    </ul>
+    <a href="/assignments" class="text-xs underline mt-3 inline-block">All assignments →</a>
+  </section>
+  <section class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+    <h2 class="font-bold text-navy dark:text-white mb-3">❓ Upcoming Quizzes</h2>
+    <% if (!upcomingQuizzes.length) { %><p class="text-sm text-gray-500">No quizzes waiting.</p><% } %>
+    <ul class="space-y-2 text-sm">
+      <% upcomingQuizzes.forEach(q => { %>
+        <li class="flex justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-2">
+          <a href="/quiz/<%= q.id %>" class="text-navy dark:text-gold underline"><%= q.title %></a>
+          <span class="text-gray-500 whitespace-nowrap"><%= q.due_at ? fmtDate(q.due_at) : '' %></span>
+        </li>
+      <% }) %>
+    </ul>
+    <a href="/grades" class="text-xs underline mt-3 inline-block">My grades →</a>
+  </section>
+</div>
+
+<% if (announcements.length) { %>
+<section class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+  <h2 class="font-bold text-navy dark:text-white mb-3">📢 Announcements</h2>
+  <div class="space-y-4">
+    <% announcements.forEach(a => { %>
+      <article class="border-l-4 border-gold pl-4">
+        <h3 class="font-semibold text-sm"><%= a.title %> <span class="font-normal text-gray-500 text-xs">— <%= a.author || 'Academy' %>, <%= fmtDate(a.created_at) %></span></h3>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1 whitespace-pre-line"><%= a.body %></p>
+      </article>
+    <% }) %>
+  </div>
+</section>
+<% } %>

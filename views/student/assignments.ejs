@@ -1,0 +1,19 @@
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">My Assignments</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<% if (!assignments.length) { %><p class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow text-gray-500">No assignments yet.</p><% } %>
+<div class="space-y-3">
+  <% assignments.forEach(a => { %>
+    <a href="/assignments/<%= a.id %>" class="block bg-white dark:bg-gray-800 rounded-xl shadow p-5 hover:shadow-md">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="font-bold text-navy dark:text-white"><%= a.title %></h2>
+          <p class="text-xs text-gray-500"><%= a.course_title %> · Due: <%= a.due_at ? fmtDateTime(a.due_at) : 'No due date' %> · <%= a.max_points %> pts</p>
+        </div>
+        <% const st = a.my_status || 'not_submitted'; %>
+        <span class="text-xs font-bold px-3 py-1 rounded-full <%= st === 'graded' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : st === 'needs_revision' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100' : ['submitted','under_review'].includes(st) ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' %>">
+          <%= st.replace(/_/g, ' ') %><%= a.my_grade != null ? ' · ' + a.my_grade : '' %>
+        </span>
+      </div>
+    </a>
+  <% }) %>
+</div>

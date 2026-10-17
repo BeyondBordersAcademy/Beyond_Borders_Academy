@@ -1,0 +1,20 @@
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">My Learning Materials</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<% if (!materials.length) { %>
+  <p class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow text-gray-500">No materials assigned yet.</p>
+<% } %>
+<% let lastCourse = null; %>
+<% materials.forEach(m => { %>
+  <% if (m.course_title !== lastCourse) { lastCourse = m.course_title; %>
+    <h2 class="font-bold text-navy dark:text-gold mt-6 mb-2"><%= m.course_title %></h2>
+  <% } %>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow px-4 py-3 mb-2 flex items-center justify-between gap-3">
+    <div>
+      <p class="font-semibold text-sm"><%= m.title %></p>
+      <p class="text-xs text-gray-500"><%= m.kind %><% if (m.tags) { %> · <%= m.tags %><% } %></p>
+    </div>
+    <% if (m.external_url) { %><a href="<%= m.external_url %>" target="_blank" rel="noopener" class="text-sm underline text-navy dark:text-gold">Open link</a>
+    <% } else if (m.file_path && m.downloadable) { %><a href="/materials/<%= m.id %>/download" class="text-sm underline text-navy dark:text-gold">Download</a>
+    <% } else { %><span class="text-xs text-gray-400">Online only</span><% } %>
+  </div>
+<% }) %>

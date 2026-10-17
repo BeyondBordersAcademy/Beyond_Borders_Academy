@@ -1,0 +1,86 @@
+<%- include('_nav', { active: '/admin/students' }) %>
+<nav class="text-xs text-gray-500 mb-4"><a href="/admin/students" class="underline">Students</a> › <%= s.name %></nav>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white"><%= s.name %></h1>
+<p class="text-sm text-gray-500"><%= s.email %> · joined <%= fmtDate(s.created_at) %></p>
+
+<div class="grid lg:grid-cols-2 gap-6 mt-6">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+    <h2 class="font-bold text-navy dark:text-white mb-3">Profile & Status</h2>
+    <form method="post" action="/admin/students/<%= s.id %>" class="space-y-3 text-sm">
+      <input type="hidden" name="action" value="update">
+      <div><label class="block font-semibold mb-1">Name</label>
+        <input name="name" value="<%= s.name %>" maxlength="120" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="block font-semibold mb-1">CEFR level</label>
+          <select name="cefr_level" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+            <option value="">—</option>
+            <% ['A1','A2','B1','B2','C1','C2','~A1','~A2','~B1','~B2','~C1','~C2'].forEach(l => { %><option <%= s.cefr_level === l ? 'selected' : '' %>><%= l %></option><% }) %>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Levels prefixed with ~ are placement estimates awaiting your review.</p></div>
+        <div><label class="block font-semibold mb-1">Status</label>
+          <select name="status" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+            <% ['active','pending','suspended'].forEach(st => { %><option <%= s.status === st ? 'selected' : '' %>><%= st %></option><% }) %>
+          </select></div>
+      </div>
+      <div><label class="block font-semibold mb-1">Private admin notes</label>
+        <textarea name="admin_notes" rows="3" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900"><%= s.admin_notes %></textarea></div>
+      <button class="bg-navy text-white px-5 py-2 rounded-lg">Save Changes</button>
+    </form>
+    <div class="flex flex-wrap gap-2 mt-4">
+      <form method="post" action="/admin/students/<%= s.id %>" onsubmit="return confirm('Suspend this account?')"><input type="hidden" name="action" value="suspend"><button class="text-xs border border-red-300 text-red-700 px-3 py-1.5 rounded">Suspend</button></form>
+      <form method="post" action="/admin/students/<%= s.id %>"><input type="hidden" name="action" value="reactivate"><button class="text-xs border border-green-300 text-green-700 px-3 py-1.5 rounded">Reactivate</button></form>
+      <form method="post" action="/admin/students/<%= s.id %>" onsubmit="return confirm('Reset password and show a temporary one?')"><input type="hidden" name="action" value="reset_password"><button class="text-xs border border-gray-300 px-3 py-1.5 rounded">Reset password</button></form>
+    </div>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+    <h2 class="font-bold text-navy dark:text-white mb-3">Enrollments</h2>
+    <ul class="text-sm space-y-2">
+      <% enrollments.forEach(e => { %>
+        <li class="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
+          <span><%= e.title %></span>
+          <span class="text-gray-500"><%= e.status %> · <%= e.progress_pct %>%</span>
+        </li>
+      <% }) %>
+      <% if (!enrollments.length) { %><li class="text-gray-500 text-sm">Not enrolled in any course.</li><% } %>
+    </ul>
+    <form method="post" action="/admin/students/<%= s.id %>" class="flex gap-2 mt-4 text-sm">
+      <input type="hidden" name="action" value="enroll">
+      <select name="course_id" class="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+        <% courses.forEach(c => { %><option value="<%= c.id %>"><%= c.title %></option><% }) %>
+      </select>
+      <button class="bg-gold text-navy font-bold px-4 py-2 rounded-lg">Enroll</button>
+    </form>
+
+    <h2 class="font-bold text-navy dark:text-white mt-6 mb-3">Certificates</h2>
+    <ul class="text-sm space-y-1">
+      <% certs.forEach(c => { %><li class="flex justify-between"><span><%= c.course_title %></span><span class="font-mono text-xs"><%= c.code %> · <%= c.status %></span></li><% }) %>
+      <% if (!certs.length) { %><li class="text-gray-500">None issued.</li><% } %>
+    </ul>
+  </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-6 mt-6">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+    <h2 class="font-bold text-navy dark:text-white mb-3">Recent submissions</h2>
+    <ul class="text-sm space-y-2">
+      <% submissions.forEach(x => { %>
+        <li class="flex justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-1">
+          <span><%= x.title %></span><span class="text-gray-500"><%= x.status %><%= x.grade != null ? ' · ' + x.grade : '' %></span>
+        </li>
+      <% }) %>
+      <% if (!submissions.length) { %><li class="text-gray-500">None.</li><% } %>
+    </ul>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+    <h2 class="font-bold text-navy dark:text-white mb-3">Recent quiz attempts</h2>
+    <ul class="text-sm space-y-2">
+      <% attempts.forEach(x => { %>
+        <li class="flex justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-1">
+          <span><%= x.title %></span><span class="text-gray-500"><%= x.score != null ? x.score + '/' + x.max_score : x.status %></span>
+        </li>
+      <% }) %>
+      <% if (!attempts.length) { %><li class="text-gray-500">None.</li><% } %>
+    </ul>
+  </div>
+</div>

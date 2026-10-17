@@ -1,0 +1,59 @@
+<nav class="text-xs text-gray-500 mb-4" aria-label="Breadcrumb">
+  <a href="/dashboard" class="underline">Dashboard</a> ›
+  <a href="/courses/<%= lesson.course_slug %>/learn" class="underline"><%= lesson.course_title %></a> › <%= lesson.title %>
+</nav>
+
+<div class="grid lg:grid-cols-4 gap-6">
+  <aside class="lg:col-span-1 order-2 lg:order-1">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 sticky top-4 max-h-[70vh] overflow-y-auto">
+      <h2 class="font-bold text-sm text-navy dark:text-white mb-2">Course content</h2>
+      <% let lastUnit = null; %>
+      <% lessons.forEach(l => { %>
+        <% if (l.unit_title !== lastUnit) { lastUnit = l.unit_title; %>
+          <p class="text-xs font-bold text-gray-500 uppercase mt-3 mb-1"><%= l.unit_title %></p>
+        <% } %>
+        <a href="/lessons/<%= l.id %>" class="block text-sm px-2 py-1.5 rounded <%= l.id === lesson.id ? 'bg-gold/20 font-semibold text-navy dark:text-gold' : 'hover:bg-gray-100 dark:hover:bg-gray-700' %>"><%= l.title %></a>
+      <% }) %>
+    </div>
+  </aside>
+
+  <article class="lg:col-span-3 order-1 lg:order-2 bg-white dark:bg-gray-800 rounded-2xl shadow p-6 sm:p-8">
+    <p class="text-xs text-gray-500 uppercase font-semibold"><%= lesson.unit_title %></p>
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-navy dark:text-white mt-1"><%= lesson.title %></h1>
+    <div class="prose-lesson mt-4 text-gray-800 dark:text-gray-200"><%- lesson.body_html %></div>
+
+    <% if (showEs && lesson.body_es) { %>
+      <details class="mt-6 border border-gold/40 rounded-xl p-4 bg-gold/5">
+        <summary class="font-semibold cursor-pointer text-sm">🇪🇸 Ver explicación en español</summary>
+        <div class="prose-lesson mt-3 text-gray-800 dark:text-gray-200"><%- lesson.body_es %></div>
+      </details>
+    <% } %>
+
+    <% if (materials.length) { %>
+      <h2 class="font-bold text-navy dark:text-white mt-8 mb-2">Lesson materials</h2>
+      <ul class="space-y-1 text-sm">
+        <% materials.forEach(m => { %>
+          <li class="flex items-center justify-between gap-2 border border-gray-100 dark:border-gray-700 rounded-lg px-3 py-2">
+            <span>📄 <%= m.title %> <span class="text-xs text-gray-500">(<%= m.kind %>)</span></span>
+            <% if (m.external_url) { %><a href="<%= m.external_url %>" target="_blank" rel="noopener" class="underline text-navy dark:text-gold">Open</a>
+            <% } else if (m.downloadable && m.file_path) { %><a href="/materials/<%= m.id %>/download" class="underline text-navy dark:text-gold">Download</a>
+            <% } else { %><span class="text-xs text-gray-400">View only</span><% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+
+    <div class="mt-8 flex flex-wrap items-center gap-3 border-t border-gray-100 dark:border-gray-700 pt-6">
+      <form method="post" action="/lessons/<%= lesson.id %>/complete">
+        <input type="hidden" name="completed" value="<%= completed ? '0' : '1' %>">
+        <button class="<%= completed ? 'border border-gray-300 dark:border-gray-600' : 'bg-gold text-navy font-bold hover:bg-gold-600 hover:text-white' %> px-5 py-2.5 rounded-lg text-sm">
+          <%= completed ? '↩ Mark as not complete' : '✓ Mark lesson complete' %>
+        </button>
+      </form>
+      <div class="ml-auto flex gap-2 text-sm">
+        <% if (prev) { %><a href="/lessons/<%= prev.id %>" class="border border-gray-300 dark:border-gray-600 px-4 py-2.5 rounded-lg">← Previous</a><% } %>
+        <% if (next) { %><a href="/lessons/<%= next.id %>" class="bg-navy text-white px-4 py-2.5 rounded-lg hover:bg-navy-800">Next →</a><% } %>
+      </div>
+    </div>
+  </article>
+</div>

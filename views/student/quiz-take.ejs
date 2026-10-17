@@ -1,0 +1,59 @@
+<div class="max-w-3xl mx-auto">
+  <h1 class="text-2xl font-extrabold text-navy dark:text-white"><%= quiz.title %></h1>
+  <p class="text-sm text-gray-500 mt-1"><%= quiz.course_title %></p>
+  <% if (quiz.instructions) { %><p class="text-sm text-gray-600 dark:text-gray-300 mt-2 whitespace-pre-line"><%= quiz.instructions %></p><% } %>
+  <div class="flex flex-wrap gap-3 text-xs text-gray-600 dark:text-gray-400 mt-3">
+    <% if (quiz.time_limit_min) { %><span class="bg-white dark:bg-gray-800 border rounded px-2 py-1">⏱ <%= quiz.time_limit_min %> min limit</span><% } %>
+    <span class="bg-white dark:bg-gray-800 border rounded px-2 py-1">Attempts allowed: <%= quiz.attempts_allowed %></span>
+    <% if (quiz.passing_score) { %><span class="bg-white dark:bg-gray-800 border rounded px-2 py-1">Passing: <%= quiz.passing_score %>%</span><% } %>
+  </div>
+
+  <form method="post" action="/quiz/<%= quiz.id %>/submit" class="mt-6 space-y-5" id="quizForm">
+    <input type="hidden" name="attempt_id" value="<%= attemptId %>">
+    <% questions.forEach((q, i) => { const opts = JSON.parse(q.options_json || '[]'); %>
+      <fieldset class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow">
+        <legend class="font-semibold px-1"><%= i + 1 %>. <%= q.prompt %> <span class="text-xs text-gray-500">(<%= q.points %> pt)</span></legend>
+        <div class="mt-3 space-y-2">
+          <% if (q.qtype === 'multiple_choice' || q.qtype === 'true_false') { %>
+            <% opts.forEach(o => { %>
+              <label class="flex items-center gap-3 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                <input type="radio" name="answers[q<%= q.id %>]" value="<%= o %>" class="accent-[#C6A34B]"><span class="text-sm"><%= o %></span>
+              </label>
+            <% }) %>
+          <% } else if (q.qtype === 'multiple_select') { %>
+            <p class="text-xs text-gray-500">Select all that apply.</p>
+            <% opts.forEach(o => { %>
+              <label class="flex items-center gap-3 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                <input type="checkbox" name="answers[q<%= q.id %>]" value="<%= o %>" class="accent-[#C6A34B]"><span class="text-sm"><%= o %></span>
+              </label>
+            <% }) %>
+          <% } else if (q.qtype === 'fill_blank') { %>
+            <input type="text" name="answers[q<%= q.id %>]" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900" placeholder="Type your answer">
+          <% } else { %>
+            <textarea name="answers[q<%= q.id %>]" rows="<%= q.qtype === 'essay' ? 8 : 3 %>" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm" placeholder="<%= q.qtype === 'essay' ? 'Write your essay here…' : 'Type your answer…' %>"></textarea>
+            <p class="text-xs text-gray-500">This question will be graded by your teacher.</p>
+          <% } %>
+        </div>
+      </fieldset>
+    <% }) %>
+    <button class="w-full bg-gold text-navy font-bold px-6 py-4 rounded-xl text-lg hover:bg-gold-600 hover:text-white">Submit Quiz</button>
+  </form>
+</div>
+<% if (quiz.time_limit_min) { %>
+<script>
+(function () {
+  let remaining = <%= quiz.time_limit_min %> * 60;
+  const banner = document.createElement('div');
+  banner.className = 'fixed top-0 inset-x-0 bg-navy text-white text-center py-2 text-sm z-50';
+  document.body.prepend(banner);
+  const tick = () => {
+    const m = Math.floor(remaining / 60), s = remaining % 60;
+    banner.textContent = 'Time remaining: ' + m + ':' + String(s).padStart(2, '0');
+    if (remaining <= 0) { document.getElementById('quizForm').submit(); return; }
+    remaining--;
+    setTimeout(tick, 1000);
+  };
+  tick();
+})();
+</script>
+<% } %>

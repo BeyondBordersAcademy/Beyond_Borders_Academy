@@ -1,0 +1,35 @@
+# Fly.io configuration for Beyond Borders English Academy
+app = "beyond-borders-academy"
+primary_region = "ewr"
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "30s"
+    method = "GET"
+    path = "/"
+    protocol = "http"
+    timeout = "5s"
+
+[[mounts]]
+  source = "bbea_data"
+  destination = "/srv/app/data"
+
+[[mounts]]
+  source = "bbea_uploads"
+  destination = "/srv/app/uploads"
+
+[env]
+  PORT = "8080"

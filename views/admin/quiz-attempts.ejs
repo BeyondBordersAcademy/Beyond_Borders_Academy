@@ -1,0 +1,24 @@
+<%- include('_nav', { active: '/admin/quizzes' }) %>
+<nav class="text-xs text-gray-500 mb-4"><a href="/admin/quizzes" class="underline">Quizzes</a> › Attempts</nav>
+<h1 class="text-2xl font-extrabold text-navy dark:text-white">Attempts: <%= quiz.title %></h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead><tr class="text-left text-gray-500 border-b border-gray-200 dark:border-gray-700">
+      <th class="px-4 py-2">Student</th><th class="px-4 py-2">Attempt</th><th class="px-4 py-2">Submitted</th><th class="px-4 py-2">Score</th><th class="px-4 py-2">Status</th><th class="px-4 py-2"></th>
+    </tr></thead>
+    <tbody>
+      <% attempts.forEach(a => { %>
+        <tr class="border-b border-gray-100 dark:border-gray-700">
+          <td class="px-4 py-2 font-semibold"><%= a.student_name %></td>
+          <td class="px-4 py-2">#<%= a.attempt_no %></td>
+          <td class="px-4 py-2 text-gray-500"><%= a.submitted_at ? fmtDateTime(a.submitted_at) : '—' %></td>
+          <td class="px-4 py-2 font-bold"><%= a.score != null ? a.score + ' / ' + a.max_score : '—' %></td>
+          <td class="px-4 py-2"><span class="text-xs px-2 py-0.5 rounded <%= a.status === 'needs_grading' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800' %>"><%= a.status.replace('_', ' ') %></span></td>
+          <td class="px-4 py-2"><a href="/admin/attempts/<%= a.id %>/grade" class="underline text-navy dark:text-gold">Review / Grade</a></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% if (!attempts.length) { %><p class="p-4 text-sm text-gray-500">No attempts yet.</p><% } %>
+</div>

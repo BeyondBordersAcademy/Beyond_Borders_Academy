@@ -1,0 +1,15 @@
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Notifications</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<% if (!notes.length) { %><p class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow text-gray-500">No notifications.</p><% } %>
+<div class="space-y-2 max-w-3xl">
+  <% notes.forEach(n => { %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow px-4 py-3 flex gap-3">
+      <span class="text-xl"><%= n.kind === 'grade' ? '📝' : n.kind === 'certificate' ? '🎓' : n.kind === 'announcement' ? '📢' : n.kind === 'message' ? '✉️' : '🔔' %></span>
+      <div>
+        <p class="font-semibold text-sm"><%= n.title %></p>
+        <% if (n.body) { %><p class="text-sm text-gray-600 dark:text-gray-300"><%= n.body %></p><% } %>
+        <p class="text-xs text-gray-400 mt-1"><%= fmtDateTime(n.created_at) %></p>
+      </div>
+    </div>
+  <% }) %>
+</div>

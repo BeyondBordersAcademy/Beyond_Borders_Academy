@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" class="<%= theme === 'dark' ? 'dark' : '' %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= title ? title + ' — ' : '' %><%= siteName %></title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: {
+    colors: { navy: { DEFAULT:'#0B1F3A', 800:'#12294d', 900:'#0B1F3A' }, gold: { DEFAULT:'#C6A34B', 600:'#a8873a' } },
+    fontFamily: { sans: ['Inter','system-ui','-apple-system','Segoe UI','Roboto','sans-serif'] }
+  } }
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; }
+  .gold-underline { border-bottom: 3px solid #C6A34B; }
+  .prose-lesson h2 { font-size: 1.25rem; font-weight: 700; margin: 1rem 0 .5rem; color: #0B1F3A; }
+  .dark .prose-lesson h2 { color: #e5e7eb; }
+  .prose-lesson p { margin: .5rem 0; line-height: 1.7; }
+  .prose-lesson ul, .prose-lesson ol { margin: .5rem 0 .5rem 1.5rem; list-style: disc; }
+  .prose-lesson ol { list-style: decimal; }
+  .prose-lesson table { border-collapse: collapse; margin: .75rem 0; width: 100%; }
+  .prose-lesson th, .prose-lesson td { border: 1px solid #d1d5db; padding: .5rem .75rem; text-align: left; }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
+
+<a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-navy text-white px-3 py-2 rounded z-50">Skip to content</a>
+
+<header class="bg-navy text-white shadow">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-3" aria-label="<%= siteName %> home">
+      <%- include('partials/logo', { size: 40 }) %>
+      <span class="leading-tight">
+        <span class="block font-bold text-sm sm:text-base tracking-wide"><%= siteName %></span>
+        <span class="block text-[11px] sm:text-xs text-gold font-medium"><%= tagline %></span>
+      </span>
+    </a>
+    <nav class="hidden md:flex items-center gap-5 text-sm" aria-label="Primary">
+      <a href="/" class="hover:text-gold">Home</a>
+      <a href="/about" class="hover:text-gold">About</a>
+      <a href="/courses" class="hover:text-gold">Courses</a>
+      <a href="/placement" class="hover:text-gold">Placement Test</a>
+      <a href="/contact" class="hover:text-gold">Contact</a>
+      <% if (user && user.role === 'student') { %>
+        <a href="/dashboard" class="hover:text-gold font-semibold">My Dashboard</a>
+      <% } %>
+      <% if (isAdmin) { %>
+        <a href="/admin" class="hover:text-gold font-semibold">Admin</a>
+      <% } %>
+    </nav>
+    <div class="flex items-center gap-2">
+      <form method="post" action="/theme" class="inline">
+        <button type="submit" class="p-2 rounded hover:bg-white/10" aria-label="Toggle dark mode" title="Toggle dark/light mode">
+          <% if (theme === 'dark') { %>☀️<% } else { %>🌙<% } %>
+        </button>
+      </form>
+      <% if (user) { %>
+        <span class="hidden sm:inline text-xs text-gray-300"><%= user.name %> (<%= user.role %>)</span>
+        <form method="post" action="/logout" class="inline">
+          <button class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded">Log out</button>
+        </form>
+      <% } else { %>
+        <a href="/login" class="text-xs sm:text-sm bg-gold text-navy font-semibold px-3 py-1.5 rounded hover:bg-gold-600 hover:text-white">Log in</a>
+        <a href="/register" class="hidden sm:inline text-xs sm:text-sm border border-white/40 px-3 py-1.5 rounded hover:bg-white/10">Register</a>
+      <% } %>
+      <button id="menuBtn" class="md:hidden p-2 rounded hover:bg-white/10" aria-label="Open menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+  <nav id="mobileMenu" class="md:hidden hidden border-t border-white/10 px-4 py-3 flex flex-col gap-3 text-sm" aria-label="Mobile">
+    <a href="/" class="hover:text-gold">Home</a>
+    <a href="/about" class="hover:text-gold">About</a>
+    <a href="/courses" class="hover:text-gold">Courses</a>
+    <a href="/placement" class="hover:text-gold">Placement Test</a>
+    <a href="/contact" class="hover:text-gold">Contact</a>
+    <% if (user && user.role === 'student') { %><a href="/dashboard" class="text-gold font-semibold">My Dashboard</a><% } %>
+    <% if (isAdmin) { %><a href="/admin" class="text-gold font-semibold">Admin</a><% } %>
+    <% if (!user) { %><a href="/register" class="hover:text-gold">Register</a><% } %>
+  </nav>
+</header>
+
+<% if (flash) { %>
+  <div class="max-w-7xl mx-auto px-4 mt-4 w-full" role="alert">
+    <div class="rounded px-4 py-3 text-sm <%= flash.type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100' : flash.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' %>">
+      <%= flash.message %>
+    </div>
+  </div>
+<% } %>
+
+<main id="main" class="flex-1 w-full max-w-7xl mx-auto px-4 py-8">
+  <%- body %>
+</main>
+
+<footer class="bg-navy text-gray-300 text-sm mt-12">
+  <div class="max-w-7xl mx-auto px-4 py-10 grid gap-8 md:grid-cols-4">
+    <div>
+      <div class="flex items-center gap-2 mb-3"><%- include('partials/logo', { size: 32 }) %>
+        <span class="font-bold text-white"><%= siteName %></span></div>
+      <p class="text-xs"><%= tagline %></p>
+    </div>
+    <nav aria-label="Footer">
+      <h3 class="text-white font-semibold mb-2">Academy</h3>
+      <ul class="space-y-1 text-xs">
+        <li><a href="/about" class="hover:text-gold">About us</a></li>
+        <li><a href="/courses" class="hover:text-gold">Courses</a></li>
+        <li><a href="/placement" class="hover:text-gold">Placement test</a></li>
+        <li><a href="/verify/0000" class="hover:text-gold">Verify a certificate</a></li>
+      </ul>
+    </nav>
+    <nav aria-label="Legal">
+      <h3 class="text-white font-semibold mb-2">Policies</h3>
+      <ul class="space-y-1 text-xs">
+        <li><a href="/policies/privacy" class="hover:text-gold">Privacy policy</a></li>
+        <li><a href="/policies/terms" class="hover:text-gold">Terms of use</a></li>
+        <li><a href="/policies/certificates" class="hover:text-gold">About our certificates</a></li>
+      </ul>
+    </nav>
+    <div>
+      <h3 class="text-white font-semibold mb-2">Contact</h3>
+      <p class="text-xs"><a href="/contact" class="hover:text-gold">Contact form</a></p>
+      <p class="text-xs mt-1">Certificates issued here are academy certificates of completion — not government-accredited qualifications or official CEFR certifications.</p>
+    </div>
+  </div>
+  <div class="border-t border-white/10 py-4 text-center text-xs text-gray-400">© <%= new Date().getFullYear() %> <%= siteName %>. All rights reserved.</div>
+</footer>
+
+<script>
+document.getElementById('menuBtn')?.addEventListener('click', function () {
+  const m = document.getElementById('mobileMenu');
+  const open = m.classList.toggle('hidden');
+  this.setAttribute('aria-expanded', String(!open));
+});
+</script>
+</body>
+</html>

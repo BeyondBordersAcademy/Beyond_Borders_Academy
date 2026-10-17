@@ -1,0 +1,32 @@
+<%- include('_nav', { active: '/admin/courses' }) %>
+<div class="flex items-center justify-between">
+  <h1 class="text-3xl font-extrabold text-navy dark:text-white">Courses</h1>
+  <a href="/admin/courses/new" class="bg-gold text-navy font-bold px-4 py-2 rounded-lg text-sm">+ New Course</a>
+</div>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+<div class="grid gap-4 md:grid-cols-2">
+  <% courses.forEach(c => { %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 border-l-4 <%= c.status === 'published' ? 'border-green-500' : c.status === 'archived' ? 'border-gray-400' : 'border-gold' %>">
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <h2 class="font-bold text-navy dark:text-white"><%= c.title %></h2>
+          <p class="text-xs text-gray-500 mt-1"><%= c.level || 'No level' %> · <%= c.format %> · <%= c.enrolled %> enrolled · <span class="font-semibold"><%= c.status %></span></p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2 mt-3 text-xs">
+        <a href="/admin/courses/<%= c.id %>/builder" class="bg-navy text-white px-3 py-1.5 rounded">Course Builder</a>
+        <a href="/admin/courses/<%= c.id %>/edit" class="border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded">Settings</a>
+        <a href="/admin/gradebook/<%= c.id %>" class="border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded">Gradebook</a>
+        <form method="post" action="/admin/courses/<%= c.id %>" class="inline">
+          <input type="hidden" name="action" value="duplicate">
+          <button class="border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded">Duplicate</button>
+        </form>
+        <% if (c.status !== 'published') { %>
+          <form method="post" action="/admin/courses/<%= c.id %>" class="inline"><input type="hidden" name="action" value="publish"><button class="border border-green-300 text-green-700 px-3 py-1.5 rounded">Publish</button></form>
+        <% } else { %>
+          <form method="post" action="/admin/courses/<%= c.id %>" class="inline"><input type="hidden" name="action" value="unpublish"><button class="border border-amber-300 text-amber-700 px-3 py-1.5 rounded">Unpublish</button></form>
+        <% } %>
+      </div>
+    </div>
+  <% }) %>
+</div>

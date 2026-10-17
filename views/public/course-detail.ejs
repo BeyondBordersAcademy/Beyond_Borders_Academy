@@ -1,0 +1,62 @@
+<nav class="text-xs text-gray-500 mb-4" aria-label="Breadcrumb"><a href="/courses" class="underline">Courses</a> › <%= course.title %></nav>
+
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow overflow-hidden">
+  <div class="bg-navy text-white px-6 py-8 sm:px-10">
+    <div class="flex flex-wrap gap-2 mb-3">
+      <% if (course.level) { %><span class="text-xs font-bold bg-gold text-navy px-2 py-0.5 rounded"><%= course.level %></span><% } %>
+      <span class="text-xs bg-white/15 px-2 py-0.5 rounded"><%= course.format %></span>
+      <span class="text-xs bg-white/15 px-2 py-0.5 rounded"><%= course.enrollment_mode === 'open' ? 'Open enrollment' : course.enrollment_mode === 'invite' ? 'Invitation only' : 'Approval required' %></span>
+    </div>
+    <h1 class="text-3xl font-extrabold"><%= course.title %></h1>
+    <p class="mt-2 text-gray-200 text-sm">Instructor: <%= course.instructor || 'Academy staff' %></p>
+    <p class="mt-4 text-xl font-bold text-gold"><%= course.price_cents > 0 ? '$' + (course.price_cents/100).toFixed(2) : 'Free' %></p>
+  </div>
+
+  <div class="px-6 py-8 sm:px-10 grid md:grid-cols-3 gap-8">
+    <div class="md:col-span-2">
+      <h2 class="font-bold text-lg text-navy dark:text-white">About this course</h2>
+      <p class="mt-2 text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line"><%= course.description || 'Course description coming soon.' %></p>
+      <% if (course.objectives) { %>
+        <h2 class="font-bold text-lg text-navy dark:text-white mt-6">Learning objectives</h2>
+        <ul class="mt-2 space-y-1 text-gray-700 dark:text-gray-300">
+          <% course.objectives.split('\n').filter(Boolean).forEach(o => { %>
+            <li class="flex gap-2"><span class="text-gold font-bold">✓</span> <%= o %></li>
+          <% }) %>
+        </ul>
+      <% } %>
+      <h2 class="font-bold text-lg text-navy dark:text-white mt-6">Course content</h2>
+      <% if (!units.length) { %><p class="text-sm text-gray-500 mt-2">Content is being prepared.</p><% } %>
+      <div class="mt-2 space-y-3">
+        <% units.forEach(u => { %>
+          <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+            <p class="font-semibold text-navy dark:text-white"><%= u.title %></p>
+            <ul class="mt-1 text-sm text-gray-600 dark:text-gray-300 list-disc ml-5">
+              <% lessons.filter(l => l.unit_id === u.id).forEach(l => { %><li><%= l.title %></li><% }) %>
+            </ul>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+    <aside class="md:col-span-1">
+      <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-5 sticky top-4">
+        <% if (enrolled) { %>
+          <p class="text-sm text-green-700 dark:text-green-300 font-semibold mb-3">✓ You are enrolled in this course.</p>
+          <a href="/courses/<%= course.slug %>/learn" class="block text-center bg-gold text-navy font-bold px-4 py-3 rounded-lg hover:bg-gold-600 hover:text-white">Continue Learning</a>
+        <% } else if (!user) { %>
+          <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">Create a free account or log in to enroll.</p>
+          <a href="/register" class="block text-center bg-gold text-navy font-bold px-4 py-3 rounded-lg hover:bg-gold-600 hover:text-white mb-2">Enroll — Free Account</a>
+          <a href="/login" class="block text-center border border-navy dark:border-gold text-navy dark:text-gold px-4 py-2 rounded-lg">Log In</a>
+        <% } else { %>
+          <form method="post" action="/enroll/<%= course.id %>">
+            <button class="w-full bg-gold text-navy font-bold px-4 py-3 rounded-lg hover:bg-gold-600 hover:text-white">Enroll Now</button>
+          </form>
+        <% } %>
+        <dl class="mt-5 text-sm space-y-2 text-gray-600 dark:text-gray-300">
+          <div class="flex justify-between"><dt>Level</dt><dd class="font-semibold"><%= course.level || '—' %></dd></div>
+          <div class="flex justify-between"><dt>Format</dt><dd class="font-semibold"><%= course.format %></dd></div>
+          <div class="flex justify-between"><dt>Price</dt><dd class="font-semibold"><%= course.price_cents > 0 ? '$' + (course.price_cents/100).toFixed(2) : 'Free' %></dd></div>
+        </dl>
+      </div>
+    </aside>
+  </div>
+</div>

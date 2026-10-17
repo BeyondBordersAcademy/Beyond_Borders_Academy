@@ -1,0 +1,59 @@
+<%- include('_nav', { active: '/admin/materials' }) %>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Material Library</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 mb-6">
+  <h2 class="font-bold text-navy dark:text-white mb-3">Upload new material</h2>
+  <form method="post" action="/admin/materials" enctype="multipart/form-data" class="grid sm:grid-cols-2 gap-3 text-sm">
+    <input name="title" placeholder="Title *" required maxlength="200" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+    <select name="kind" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+      <% ['document','worksheet','audio','video','presentation','image','link','other'].forEach(k => { %><option><%= k %></option><% }) %>
+    </select>
+    <input type="file" name="file" class="text-sm">
+    <input name="external_url" placeholder="…or external URL (https://…)" maxlength="500" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+    <select name="course_id" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+      <option value="">Library only (no course)</option>
+      <% courses.forEach(c => { %><option value="<%= c.id %>"><%= c.title %></option><% }) %>
+    </select>
+    <input name="tags" placeholder="Tags (comma separated): A1, grammar, verbs" maxlength="300" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+    <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="downloadable" value="1" checked class="accent-[#C6A34B]"> Students may download</label>
+    <div><button class="bg-gold text-navy font-bold px-5 py-2 rounded-lg">Upload</button></div>
+  </form>
+  <p class="text-xs text-gray-500 mt-2">Max 50 MB. Executable and script files are blocked. Upload once, then reuse the same material in multiple courses below.</p>
+</div>
+
+<form method="get" action="/admin/materials" class="flex gap-2 mb-4 text-sm">
+  <input name="q" value="<%= q %>" placeholder="Search title or tags…" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800">
+  <select name="kind" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800">
+    <option value="">All kinds</option>
+    <% ['document','worksheet','audio','video','presentation','image','link','other'].forEach(k => { %><option <%= kind === k ? 'selected' : '' %>><%= k %></option><% }) %>
+  </select>
+  <button class="bg-navy text-white px-4 py-2 rounded-lg">Filter</button>
+</form>
+
+<div class="space-y-2">
+  <% materials.forEach(m => { %>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow px-4 py-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p class="font-semibold text-sm"><%= m.title %> <span class="text-xs text-gray-500 font-normal">(<%= m.kind %>)</span></p>
+          <p class="text-xs text-gray-500"><%= m.course_title || 'Library only' %><% if (m.tags) { %> · <%= m.tags %><% } %> · <%= m.downloadable ? 'downloadable' : 'view-only' %></p>
+        </div>
+        <div class="flex gap-2 text-xs">
+          <form method="post" action="/admin/materials/<%= m.id %>" class="flex gap-1">
+            <input type="hidden" name="action" value="assign">
+            <select name="course_id" class="border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-900 text-xs">
+              <% courses.forEach(c => { %><option value="<%= c.id %>"><%= c.title.slice(0, 30) %></option><% }) %>
+            </select>
+            <button class="border border-gray-300 dark:border-gray-600 px-2 py-1 rounded" title="Reuse in another course">Reuse →</button>
+          </form>
+          <form method="post" action="/admin/materials/<%= m.id %>" onsubmit="return confirm('Delete this material?')">
+            <input type="hidden" name="action" value="delete">
+            <button class="text-red-600 px-2 py-1">Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+  <% if (!materials.length) { %><p class="text-sm text-gray-500">No materials found.</p><% } %>
+</div>
