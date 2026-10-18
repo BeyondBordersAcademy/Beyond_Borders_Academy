@@ -297,8 +297,8 @@ async function duplicateCourse(courseId, actorId) {
       q.randomize, q.passing_score, q.due_at, q.available_from, q.available_until, q.category, q.weight);
     quizMap[q.id] = nq.lastInsertRowid;
     for (const qu of await db.prepare('SELECT * FROM questions WHERE quiz_id=?').all(q.id)) {
-      await db.prepare('INSERT INTO questions (quiz_id, bank_id, qtype, prompt, options_json, correct_json, points) VALUES (?,?,?,?,?,?,?)')
-        .run(nq.lastInsertRowid, qu.bank_id, qu.qtype, qu.prompt, qu.options_json, qu.correct_json, qu.points);
+      await db.prepare('INSERT INTO questions (quiz_id, bank_id, qtype, prompt, options_json, correct_json, points, audio_url) VALUES (?,?,?,?,?,?,?,?)')
+        .run(nq.lastInsertRowid, qu.bank_id, qu.qtype, qu.prompt, qu.options_json, qu.correct_json, qu.points, qu.audio_url);
     }
   }
   return newCourseId;
@@ -574,7 +574,7 @@ router.get('/quizzes/:id/edit', async (req, res) => {
   res.render('admin/quiz-form', { title: 'Edit Quiz', quiz, courses, banks, questions });
 });
 
-router.post('/quizzes/:id', async (req, res) => {
+router.post('/quizzes/:id', matUpload.single('audio'), async (req, res) => {
   const quiz = await db.prepare('SELECT * FROM quizzes WHERE id=?').get(req.params.id);
   if (!quiz) return res.status(404).render('errors/404', { title: 'Quiz not found' });
   const action = req.body.action || 'update';
@@ -606,9 +606,24 @@ router.post('/quizzes/:id', async (req, res) => {
         .run(String(req.body.bank_name).slice(0, 120), String(req.body.bank_level || '').slice(0, 10), String(req.body.bank_topic || '').slice(0, 120));
       savedBankId = b.lastInsertRowid;
     }
-    await db.prepare(`INSERT INTO questions (quiz_id, bank_id, qtype, prompt, options_json, correct_json, points)
-      VALUES (?,?,?,?,?,?,?)`).run(quiz.id, savedBankId, qtype, String(req.body.prompt || '').slice(0, 5000),
-      JSON.stringify(options), JSON.stringify(correct), Math.max(0.5, parseFloat(req.body.points) || 1));
+    // Optional listening audio attached to the question (served via the
+    // permission-checked /files/ route). Reuses the materials uploader.
+    let audioUrl = null;
+    if (req.file) {
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      const safe = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
+      try {
+        const stored = await storage.uploadBuffer('quiz-audio', safe, req.file.buffer, req.file.mimetype);
+        audioUrl = '/files/' + stored;
+      } catch (e) {
+        console.error('[storage] quiz question audio upload failed:', e.message);
+        req.setFlash('error', 'Question not added: audio upload failed. Please try again.');
+        return res.redirect('/admin/quizzes/' + quiz.id + '/edit');
+      }
+    }
+    await db.prepare(`INSERT INTO questions (quiz_id, bank_id, qtype, prompt, options_json, correct_json, points, audio_url)
+      VALUES (?,?,?,?,?,?,?,?)`).run(quiz.id, savedBankId, qtype, String(req.body.prompt || '').slice(0, 5000),
+      JSON.stringify(options), JSON.stringify(correct), Math.max(0.5, parseFloat(req.body.points) || 1), audioUrl);
     audit(req.user.id, 'question.added', `quiz=${quiz.id}`);
     req.setFlash('success', 'Question added.');
     res.redirect('/admin/quizzes/' + quiz.id + '/edit');
@@ -628,8 +643,8 @@ router.post('/quizzes/:id', async (req, res) => {
         SELECT ?, title, instructions, time_limit_min, attempts_allowed, randomize, passing_score, due_at, available_from, available_until, category, weight FROM quizzes WHERE id=?`)
         .run(targetId, quiz.id);
       for (const qu of await db.prepare('SELECT * FROM questions WHERE quiz_id=?').all(quiz.id)) {
-        await db.prepare('INSERT INTO questions (quiz_id, bank_id, qtype, prompt, options_json, correct_json, points) VALUES (?,?,?,?,?,?,?)')
-          .run(nq.lastInsertRowid, qu.bank_id, qu.qtype, qu.prompt, qu.options_json, qu.correct_json, qu.points);
+        await db.prepare('INSERT INTO questions (quiz_id, bank_id, qtype, prompt, options_json, correct_json, points, audio_url) VALUES (?,?,?,?,?,?,?,?)')
+          .run(nq.lastInsertRowid, qu.bank_id, qu.qtype, qu.prompt, qu.options_json, qu.correct_json, qu.points, qu.audio_url);
       }
       audit(req.user.id, 'quiz.copied', `quiz=${quiz.id} to course=${targetId}`);
       req.setFlash('success', 'Quiz copied to the selected course.');

@@ -138,6 +138,13 @@ app.get('/files/*', async (req, res) => {
   if (cert) {
     allowed = isStaff || cert.user_id === req.user.id;
   }
+  const qaudio = await db.prepare(`SELECT z.course_id FROM questions qq JOIN quizzes z ON z.id=qq.quiz_id
+    WHERE qq.audio_url=?`).get('/files/' + rel);
+  if (qaudio) {
+    allowed = isStaff || (qaudio.course_id && !!await db.prepare(
+      `SELECT id FROM enrollments WHERE user_id=? AND course_id=? AND status IN ('active','completed')`)
+      .get(req.user.id, qaudio.course_id));
+  }
   if (!allowed) return res.status(403).render('errors/403', { title: 'Forbidden' });
   // Supabase backend: the file lives in Supabase Storage (Render's disk is
   // ephemeral), so redirect to a short-lived signed URL after the permission

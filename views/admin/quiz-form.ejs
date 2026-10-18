@@ -68,7 +68,7 @@
     <div>
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 mb-4">
         <h2 class="font-bold text-navy dark:text-white mb-3">Add question</h2>
-        <form method="post" action="/admin/quizzes/<%= quiz.id %>" class="space-y-3 text-sm">
+        <form method="post" action="/admin/quizzes/<%= quiz.id %>" enctype="multipart/form-data" class="space-y-3 text-sm">
           <input type="hidden" name="action" value="add_question">
           <div><label class="block font-semibold mb-1">Type</label>
             <select name="qtype" id="qtype" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
@@ -81,6 +81,9 @@
             </select></div>
           <div><label class="block font-semibold mb-1">Prompt *</label>
             <textarea name="prompt" required rows="2" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></textarea></div>
+          <div><label class="block font-semibold mb-1">Listening audio (optional)</label>
+            <input type="file" name="audio" accept="audio/*" class="text-sm">
+            <p class="text-xs text-gray-500 mt-1">Attach a recording — students will see a play button on this question. Leave empty for written questions.</p></div>
           <div id="optsWrap"><label class="block font-semibold mb-1">Options (one per line)</label>
             <textarea name="options" rows="3" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900" placeholder="Option A&#10;Option B&#10;Option C"></textarea></div>
           <div id="correctSingleWrap"><label class="block font-semibold mb-1">Correct answer (exactly as written above)</label>
