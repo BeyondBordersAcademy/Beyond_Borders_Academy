@@ -9,7 +9,8 @@
     ['Active enrollments', stats.enrollments, ''],
     ['Awaiting grading', stats.pendingGrading, 'submissions + attempts'],
     ['Certificates issued', stats.certificates, ''],
-    ['Unread contact msgs', stats.unreadContact, ''],
+    ['Upcoming live sessions', stats.upcomingSessions, ''],
+    ...(user.role === 'admin' ? [['Unread contact msgs', stats.unreadContact, '']] : []),
   ].forEach(([label, value, sub]) => { %>
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-5 border-t-2 border-gold">
       <p class="text-3xl font-extrabold text-navy dark:text-white"><%= value %></p>
@@ -18,6 +19,44 @@
   <% }) %>
 </div>
 
+<% if (user.role !== 'admin') { %>
+  <section class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+    <h2 class="font-bold text-navy dark:text-white mb-3">My courses</h2>
+    <% if (!myCourses.length) { %>
+      <p class="text-sm text-gray-500">No courses assigned to you yet. Ask the administrator to assign courses to your account.</p>
+    <% } %>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <% myCourses.forEach(c => { %>
+        <% if (user.role === 'teacher') { %>
+          <a href="/admin/courses/<%= c.id %>/builder" class="block border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-gold">
+        <% } else { %>
+          <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+        <% } %>
+          <p class="font-semibold text-navy dark:text-white text-sm"><%= c.title %></p>
+          <p class="text-xs text-gray-500 mt-1"><%= c.enrolled %> active student(s) · <%= c.status %></p>
+        <% if (user.role === 'teacher') { %>
+          </a>
+        <% } else { %>
+          </div>
+        <% } %>
+      <% }) %>
+    </div>
+  </section>
+  <section class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+    <h2 class="font-bold text-navy dark:text-white mb-3">📹 Upcoming live sessions</h2>
+    <% if (!upcomingSessions.length) { %><p class="text-sm text-gray-500">Nothing scheduled.</p><% } %>
+    <ul class="text-sm space-y-2">
+      <% upcomingSessions.forEach(s => { %>
+        <li class="flex justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-1">
+          <span><strong><%= s.title %></strong> <span class="text-gray-500">· <%= s.course_title %></span></span>
+          <span class="text-gray-500 whitespace-nowrap"><%= sessionDisplayTime(s) %></span>
+        </li>
+      <% }) %>
+    </ul>
+    <a href="/admin/sessions" class="text-xs underline mt-3 inline-block">All sessions →</a>
+  </section>
+<% } %>
+
 <div class="grid lg:grid-cols-2 gap-6 mt-8">
   <section class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
     <h2 class="font-bold text-navy dark:text-white mb-3">Students who may need support <span class="text-xs font-normal text-gray-500">(progress &lt; 25%)</span></h2>
@@ -25,13 +64,18 @@
     <ul class="text-sm space-y-2">
       <% atRisk.forEach(s => { %>
         <li class="flex justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-1">
-          <a href="/admin/students/<%= s.id %>" class="underline"><%= s.name %></a>
+          <% if (user.role === 'admin') { %>
+            <a href="/admin/students/<%= s.id %>" class="underline"><%= s.name %></a>
+          <% } else { %>
+            <span><%= s.name %></span>
+          <% } %>
           <span class="text-gray-500"><%= s.course_title %> — <%= s.progress_pct %>%</span>
         </li>
       <% }) %>
     </ul>
     <a href="/admin/reports" class="text-xs underline mt-3 inline-block">Full reports →</a>
   </section>
+  <% if (user.role === 'admin') { %>
   <section class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
     <h2 class="font-bold text-navy dark:text-white mb-3">Recent activity</h2>
     <ul class="text-xs text-gray-600 dark:text-gray-300 space-y-1.5">
@@ -41,4 +85,5 @@
     </ul>
     <a href="/admin/audit" class="text-xs underline mt-3 inline-block">Audit log →</a>
   </section>
+  <% } %>
 </div>

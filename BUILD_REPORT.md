@@ -77,3 +77,21 @@ File uploads were moved off local disk to Supabase Storage, because Render's fil
 - **Deletes:** material deletion calls `storage.deleteObject()` (idempotent, ignores missing objects).
 - **Tests:** `test/storage.test.js` — 16 assertions pass: local roundtrip upload/download/delete, filename sanitization, path-escape and prefix guards, backend auto-detect + overrides, mocked-Supabase upload/download/delete/sign (URL, headers, `x-upsert`, `expiresIn` verified), certificate PDF buffer is a valid `%PDF`. Live app boot on Postgres with `STORAGE_BACKEND=local`: admin login → forced password change → material upload → `/files/` download 200 with matching bytes; anon → 302 login; traversal → 403; missing file with DB record → 404; student `/materials/:id/download` 200; certificate issue → PDF download 200 (`%PDF-`) → `/files/` serves it; assignment file+audio submission stored correctly. See STORAGE_REPORT.md.
 - **Render env vars needed:** `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` (service role — server-side only, never exposed), optional `SUPABASE_STORAGE_BUCKET` (create the bucket `academy-uploads` as **private** in the Supabase dashboard first).
+
+## Phase 2 (2026-10-18) — live classes, attendance, calendar, roles, email
+
+**Status:** Built and tested locally. NOT pushed / NOT deployed (no local git repo; needs Charlie's GitHub token to push, then Render auto-deploys). Full detail in PHASE2_REPORT.md.
+
+**Live class sessions** — staff schedule sessions per course (title, date/time + timezone, duration, Zoom/Meet meeting URL, description). Times stored as UTC, shown back in the session's timezone (labeled). Students see upcoming sessions on the dashboard, a `/sessions` page, and the course page; the Join button appears 15 min before start until end. Staff can edit/cancel (students notified)/delete. Meeting links are pasted manually — the seam for future Zoom/Meet API integration.
+
+**Attendance** — per session, staff mark each enrolled student present/late/absent/excused (+ note), audit-logged. Per-course report with per-student % present.
+
+**Calendar** — month grid + agenda views combining live sessions, quiz windows/due dates, and assignment due dates. Students see their courses (`/calendar`); staff see all/assigned (`/admin/calendar`).
+
+**Roles** — admin (everything), teacher (full control of *assigned* courses: content, grading, sessions, attendance), TA (grading + attendance + messaging for assigned courses; no content editing). New `/admin/staff` page (admin-only) to create teacher/TA accounts and assign courses. Every course route enforces assignment server-side (`requireCourseAccess`); content routes additionally require admin/teacher (`requireContent`).
+
+**Email** — nodemailer wired to the SMTP settings: real emails for invitations, password resets, announcements, and 24h session reminders (in-process 15-min interval; also auto-completes past sessions). UI stays honest when SMTP isn't configured (console log + in-app notifications, flash messages report actual delivery).
+
+**Tests** — `test/phase2.test.js` ALL PASSED (16 groups on real PostgreSQL 18.4, scratch DB): role/course authorization matrix, timezone + join-window logic, attendance %, calendar merge, email honesty, reminder idempotency, and HTTP proofs (TA 403 on settings/session-create but can mark attendance; teacher 403 on another teacher's course with zero mutation; student/anon boundaries). `pg-migrate` (17) and `storage` (16) suites still pass. 27 pages render 200 across all four roles.
+
+**Honest gaps** — not pushed/deployed; Zoom/Meet API not integrated (manual links); reminders are best-effort on Render's free tier (sleeps when idle); email needs SMTP credentials; question banks stay admin-managed; course duplication doesn't copy sessions; calendar shows the session's own timezone; no iCal export or push notifications.

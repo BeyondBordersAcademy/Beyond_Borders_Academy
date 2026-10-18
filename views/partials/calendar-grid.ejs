@@ -1,0 +1,60 @@
+<% // Shared calendar: month grid + agenda list.
+// Locals: weeks, events, year, month, monthName, view, prev, next, basePath %>
+<div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+  <div class="flex items-center gap-3">
+    <a href="<%= basePath %>?year=<%= prev.year %>&month=<%= prev.month %>&view=<%= view %>" class="px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" aria-label="Previous month">←</a>
+    <h2 class="text-xl font-bold text-navy dark:text-white whitespace-nowrap"><%= monthName %></h2>
+    <a href="<%= basePath %>?year=<%= next.year %>&month=<%= next.month %>&view=<%= view %>" class="px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm" aria-label="Next month">→</a>
+  </div>
+  <div class="flex gap-2 text-sm">
+    <a href="<%= basePath %>?year=<%= year %>&month=<%= month %>&view=month" class="px-4 py-2 rounded-lg <%= view === 'month' ? 'bg-navy text-white' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700' %>">Month</a>
+    <a href="<%= basePath %>?year=<%= year %>&month=<%= month %>&view=agenda" class="px-4 py-2 rounded-lg <%= view === 'agenda' ? 'bg-navy text-white' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700' %>">Agenda</a>
+  </div>
+</div>
+
+<% const kindStyle = { session: 'bg-gold/20 text-gold-600 dark:text-gold border-gold', quiz: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100 border-purple-400', assignment: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 border-blue-400' }; %>
+<% const kindIcon = { session: '📹', quiz: '❓', assignment: '📝' }; %>
+
+<% if (view === 'month') { %>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow overflow-hidden">
+    <div class="grid grid-cols-7 text-center text-xs font-bold text-gray-500 border-b dark:border-gray-700">
+      <% ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => { %><div class="py-2"><%= d %></div><% }) %>
+    </div>
+    <% weeks.forEach(week => { %>
+      <div class="grid grid-cols-7 border-b dark:border-gray-700 last:border-0">
+        <% week.forEach(cell => { %>
+          <div class="min-h-[92px] p-1 border-r dark:border-gray-700 last:border-0 <%= cell.inMonth ? '' : 'bg-gray-50 dark:bg-gray-900/50' %>">
+            <% if (cell.inMonth) { %>
+              <p class="text-xs font-bold text-gray-500 px-1"><%= cell.day %></p>
+              <div class="space-y-1 mt-0.5">
+                <% cell.events.slice(0, 3).forEach(e => { %>
+                  <p class="text-[11px] leading-tight px-1.5 py-0.5 rounded border-l-2 truncate <%= kindStyle[e.kind] %>" title="<%= e.title %> · <%= e.course %>"><%= kindIcon[e.kind] %> <%= e.title %></p>
+                <% }) %>
+                <% if (cell.events.length > 3) { %><p class="text-[11px] text-gray-500 px-1">+<%= cell.events.length - 3 %> more</p><% } %>
+              </div>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    <% }) %>
+  </div>
+<% } else { %>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow divide-y divide-gray-100 dark:divide-gray-700">
+    <% if (!events.length) { %><p class="p-8 text-center text-sm text-gray-500">Nothing scheduled this month.</p><% } %>
+    <% events.forEach(e => { %>
+      <div class="px-5 py-3 flex items-center gap-3 text-sm">
+        <span class="text-xs font-bold text-gray-500 whitespace-nowrap w-24"><%= e.date.slice(8, 10) %> <%= new Date(e.date + 'T12:00:00Z').toLocaleString('en-US', { month: 'short' }) %></span>
+        <span class="text-lg"><%= kindIcon[e.kind] %></span>
+        <div class="flex-1">
+          <p class="font-semibold"><%= e.title %></p>
+          <p class="text-xs text-gray-500"><%= e.course %><%= e.time ? ' · ' + e.time : '' %></p>
+        </div>
+        <span class="text-xs font-bold px-2 py-0.5 rounded border <%= kindStyle[e.kind] %>"><%= e.kind %></span>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<div class="flex gap-4 text-xs text-gray-500 mt-4">
+  <span>📹 Live session</span><span>❓ Quiz</span><span>📝 Assignment</span>
+</div>

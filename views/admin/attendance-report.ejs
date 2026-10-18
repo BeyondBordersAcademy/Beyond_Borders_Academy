@@ -1,0 +1,60 @@
+<%- include('_nav', { active: '/admin/attendance' }) %>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Attendance Report</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+
+<form method="get" action="/admin/attendance" class="flex gap-2 mb-6 text-sm">
+  <select name="course_id" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800" onchange="this.form.submit()">
+    <% courses.forEach(c => { %><option value="<%= c.id %>" <%= courseId === c.id ? 'selected' : '' %>><%= c.title %></option><% }) %>
+  </select>
+</form>
+
+<% if (!course) { %>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-8 text-center text-sm text-gray-600 dark:text-gray-300">
+    <p class="text-3xl mb-2">📋</p><p>No course selected. Schedule live sessions first, then mark attendance.</p>
+  </div>
+<% } else { %>
+  <div class="grid lg:grid-cols-3 gap-6">
+    <section class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-gray-500 border-b dark:border-gray-700">
+          <th class="px-4 py-3">Student</th>
+          <th class="px-4 py-3 text-center" title="Present or late">Present</th>
+          <th class="px-4 py-3 text-center">Late</th>
+          <th class="px-4 py-3 text-center">Absent</th>
+          <th class="px-4 py-3 text-center">Excused</th>
+          <th class="px-4 py-3 text-center">% Present</th>
+        </tr></thead>
+        <tbody>
+          <% if (!rows.length) { %>
+            <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No enrolled students.</td></tr>
+          <% } %>
+          <% rows.forEach(r => { %>
+            <tr class="border-b border-gray-100 dark:border-gray-700">
+              <td class="px-4 py-3"><p class="font-semibold"><%= r.name %></p><p class="text-xs text-gray-500"><%= r.email %></p></td>
+              <td class="px-4 py-3 text-center"><%= r.present %></td>
+              <td class="px-4 py-3 text-center"><%= r.late %></td>
+              <td class="px-4 py-3 text-center"><%= r.absent %></td>
+              <td class="px-4 py-3 text-center"><%= r.excused %></td>
+              <td class="px-4 py-3 text-center font-bold <%= r.pct == null ? 'text-gray-400' : r.pct >= 80 ? 'text-green-700' : r.pct >= 60 ? 'text-amber-600' : 'text-red-600' %>">
+                <%= r.pct == null ? '—' : r.pct + '%' %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <p class="text-xs text-gray-500 p-4">% present = (present + late) ÷ total sessions. Excused absences don't count as present but are shown separately.</p>
+    </section>
+    <section class="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 h-fit">
+      <h2 class="font-bold text-navy dark:text-white mb-3 text-sm">Sessions in this course (<%= sessions.length %>)</h2>
+      <ul class="text-xs space-y-2">
+        <% sessions.forEach(s2 => { %>
+          <li class="flex justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-1">
+            <span><%= s2.title %><br><span class="text-gray-500"><%= sessionDisplayTime(s2) %></span></span>
+            <a href="/admin/sessions/<%= s2.id %>/attendance" class="underline whitespace-nowrap">Mark</a>
+          </li>
+        <% }) %>
+        <% if (!sessions.length) { %><li class="text-gray-500">No sessions scheduled yet.</li><% } %>
+      </ul>
+    </section>
+  </div>
+<% } %>

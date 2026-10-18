@@ -51,6 +51,27 @@
 
 <div class="grid md:grid-cols-2 gap-6 mt-8">
   <section class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
+    <h2 class="font-bold text-navy dark:text-white mb-3">📹 Upcoming Live Classes</h2>
+    <% if (!upcomingSessions.length) { %><p class="text-sm text-gray-500">No live classes scheduled yet.</p><% } %>
+    <ul class="space-y-2 text-sm">
+      <% upcomingSessions.forEach(s => { const joinable = canJoinSession(s, now); %>
+        <li class="border-b border-gray-100 dark:border-gray-700 pb-2">
+          <div class="flex justify-between gap-2 items-center">
+            <div>
+              <p class="font-semibold text-navy dark:text-white"><%= s.title %></p>
+              <p class="text-xs text-gray-500"><%= s.course_title %> · <%= sessionDisplayTime(s) %></p>
+            </div>
+            <% if (joinable) { %>
+              <a href="<%= s.meeting_url %>" target="_blank" rel="noopener" class="shrink-0 bg-green-600 text-white text-xs font-bold px-4 py-2 rounded-lg">Join Now</a>
+            <% } %>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+    <a href="/sessions" class="text-xs underline mt-3 inline-block">All live sessions →</a>
+    <a href="/calendar" class="text-xs underline mt-3 ml-3 inline-block">Calendar →</a>
+  </section>
+  <section class="bg-white dark:bg-gray-800 rounded-xl shadow p-5">
     <h2 class="font-bold text-navy dark:text-white mb-3">📝 Upcoming Assignments</h2>
     <% if (!upcomingAssignments.length) { %><p class="text-sm text-gray-500">Nothing due. Nice work!</p><% } %>
     <ul class="space-y-2 text-sm">

@@ -37,7 +37,7 @@
       <div class="col-span-2"><label class="block font-semibold mb-1">From address</label><input name="smtp_from" value="<%= settings.smtp_from %>" placeholder="Academy <info@example.com>" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
     </div>
     <p class="text-xs <%= settings.smtp_host ? 'text-green-700' : 'text-amber-700' %>">
-      Status: <%= settings.smtp_host ? 'SMTP host configured — email delivery will be wired to a provider in a later phase. Until then, messages are logged and in-app notifications are used.' : 'Not configured — emails are logged to the server console and in-app notifications are used instead.' %>
+      Status: <%= settings.smtp_host ? 'Configured — the academy sends real emails (invitations, password resets, announcements, live-class reminders) through this SMTP server.' : 'Not configured — emails are logged to the server console and in-app notifications are used instead. Fill in the fields above to enable real email delivery.' %>
     </p>
     <button class="bg-gold text-navy font-bold px-6 py-2.5 rounded-lg">Save Settings</button>
   </form>

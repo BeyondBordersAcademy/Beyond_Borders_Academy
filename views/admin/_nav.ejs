@@ -1,17 +1,22 @@
 <% // Admin sub-navigation %>
 <nav class="bg-white dark:bg-gray-800 rounded-xl shadow px-4 py-3 mb-6 flex flex-wrap gap-x-4 gap-y-2 text-sm" aria-label="Admin">
   <% const links = [
-    ['/admin', 'Overview'], ['/admin/students', 'Students'], ['/admin/invites', 'Invites'],
+    ['/admin', 'Overview'],
+    ...(user.role === 'admin' ? [['/admin/students', 'Students'], ['/admin/invites', 'Invites']] : []),
     ['/admin/courses', 'Courses'], ['/admin/materials', 'Materials'], ['/admin/assignments', 'Assignments'],
-    ['/admin/quizzes', 'Quizzes'], ['/admin/banks', 'Banks'],
-    ['/admin/certificates', 'Certificates'], ['/admin/announcements', 'Announcements'],
+    ['/admin/quizzes', 'Quizzes'],
+    ...(user.role === 'admin' ? [['/admin/banks', 'Banks']] : []),
+    ['/admin/sessions', 'Live Sessions'], ['/admin/attendance', 'Attendance'], ['/admin/calendar', 'Calendar'],
+    ...(user.role === 'ta' ? [] : [['/admin/certificates', 'Certificates']]),
+    ['/admin/announcements', 'Announcements'],
     ['/admin/messages', 'Messages'], ['/admin/reports', 'Reports'],
-    ['/admin/contact-messages', 'Contact'], ['/admin/audit', 'Audit Log'],
+    ...(user.role === 'admin' ? [['/admin/contact-messages', 'Contact'], ['/admin/audit', 'Audit Log']] : []),
   ]; %>
   <% links.forEach(([href, label]) => { %>
     <a href="<%= href %>" class="<%= (typeof active !== 'undefined' && active === href) ? 'text-gold font-bold' : 'text-navy dark:text-gray-200 hover:text-gold' %>"><%= label %></a>
   <% }) %>
   <% if (user.role === 'admin') { %>
+    <a href="/admin/staff" class="<%= (typeof active !== 'undefined' && active === '/admin/staff') ? 'text-gold font-bold' : 'text-navy dark:text-gray-200 hover:text-gold' %>">👥 Staff</a>
     <a href="/admin/settings" class="<%= (typeof active !== 'undefined' && active === '/admin/settings') ? 'text-gold font-bold' : 'text-navy dark:text-gray-200 hover:text-gold' %>">⚙ Settings</a>
   <% } %>
 </nav>

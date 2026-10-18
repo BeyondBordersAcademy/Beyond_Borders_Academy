@@ -1,0 +1,48 @@
+<h1 class="text-3xl font-extrabold text-navy dark:text-white">Live Class Sessions</h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+
+<section class="mb-8">
+  <h2 class="text-xl font-bold text-navy dark:text-white mb-4">📹 Upcoming</h2>
+  <% if (!upcoming.length) { %>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-8 text-center text-sm text-gray-500">
+      <p class="text-3xl mb-2">📹</p><p>No live classes scheduled yet. Check back soon!</p>
+    </div>
+  <% } %>
+  <div class="grid gap-4 md:grid-cols-2">
+    <% upcoming.forEach(s => { const joinable = canJoinSession(s, now); %>
+      <article class="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 border-t-2 <%= joinable ? 'border-green-500' : 'border-gold' %>">
+        <p class="text-xs font-bold text-gold-600 dark:text-gold uppercase"><%= s.course_title %></p>
+        <h3 class="font-bold text-lg text-navy dark:text-white mt-1"><%= s.title %></h3>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">🕒 <%= sessionDisplayTime(s) %></p>
+        <% if (s.description) { %><p class="text-sm text-gray-500 mt-2 whitespace-pre-line"><%= s.description %></p><% } %>
+        <div class="mt-4">
+          <% if (joinable) { %>
+            <a href="<%= s.meeting_url %>" target="_blank" rel="noopener" class="inline-block bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg">Join Class Now</a>
+            <p class="text-xs text-green-700 dark:text-green-300 mt-1">The class is live — click to join.</p>
+          <% } else { %>
+            <span class="inline-block bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-semibold px-6 py-2.5 rounded-lg text-sm">Join button appears 15 min before start</span>
+          <% } %>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</section>
+
+<% if (past.length) { %>
+<section>
+  <h2 class="text-xl font-bold text-navy dark:text-white mb-4">Past sessions</h2>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow divide-y divide-gray-100 dark:divide-gray-700">
+    <% past.forEach(s => { %>
+      <div class="px-5 py-3 flex items-center justify-between gap-3 text-sm">
+        <div>
+          <p class="font-semibold"><%= s.title %> <span class="font-normal text-xs text-gray-500">· <%= s.course_title %></span></p>
+          <p class="text-xs text-gray-500"><%= sessionDisplayTime(s) %></p>
+        </div>
+        <% if (s.my_mark) { %>
+          <span class="text-xs font-bold px-2 py-0.5 rounded <%= s.my_mark === 'present' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : s.my_mark === 'late' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100' : s.my_mark === 'excused' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100' %>"><%= s.my_mark %></span>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+</section>
+<% } %>

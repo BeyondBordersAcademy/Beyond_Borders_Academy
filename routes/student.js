@@ -7,7 +7,9 @@ const fs = require('fs');
 const multer = require('multer');
 const { db } = require('../lib/db');
 const { requireStudent, ownsOrStaff } = require('../lib/auth');
-const { audit, notify, updateProgress, courseLessons, computeGradebook, fmtDate } = require('../lib/helpers');
+const { audit, notify, updateProgress, courseLessons, computeGradebook, fmtDate,
+  sessionTimes, canJoinSession, sessionDisplayTime, toDbTs, parseDbTs,
+  getCalendarEvents, buildMonthGrid } = require('../lib/helpers');
 const storage = require('../lib/storage');
 
 const router = express.Router();
@@ -15,7 +17,8 @@ const router = express.Router();
 // -- never intercepts /admin/* or other public routes.
 router.use(
   ['/dashboard', '/enroll', '/courses', '/lessons', '/materials', '/assignments',
-   '/quiz', '/grades', '/certificates', '/profile', '/notifications', '/messages'],
+   '/quiz', '/grades', '/certificates', '/profile', '/notifications', '/messages',
+   '/sessions', '/calendar'],
   requireStudent
 );
 
@@ -70,8 +73,23 @@ router.get('/dashboard', async (req, res) => {
     ORDER BY a.created_at DESC LIMIT 6`).all(...courseIds);
   const unread = (await db.prepare('SELECT COUNT(*) c FROM notifications WHERE user_id=? AND read=0').get(req.user.id)).c;
   const unreadMsgs = (await db.prepare('SELECT COUNT(*) c FROM messages WHERE to_user_id=? AND read=0').get(req.user.id)).c;
+  let upcomingSessions = [];
+  if (courseIds.length) {
+    const ph = courseIds.map(() => '?').join(',');
+    const cutoff = toDbTs(new Date(Date.now() - 6 * 3600 * 1000));
+    const raw = await db.prepare(`SELECT s.*, c.title AS course_title FROM live_sessions s
+      JOIN courses c ON c.id=s.course_id
+      WHERE s.course_id IN (${ph}) AND s.status='scheduled' AND s.starts_at >= ?
+      ORDER BY s.starts_at LIMIT 8`).all(...courseIds, cutoff);
+    const nowMs = Date.now();
+    upcomingSessions = raw.filter(ss => {
+      const { end } = sessionTimes(ss);
+      return end && end.getTime() >= nowMs;
+    });
+  }
   res.render('student/dashboard', { title: 'My Dashboard', enrollments, upcomingAssignments,
-    upcomingQuizzes, announcements, unread, unreadMsgs });
+    upcomingQuizzes, announcements, unread, unreadMsgs, upcomingSessions,
+    sessionDisplayTime, canJoinSession, now: new Date() });
 });
 
 // ---- enroll -------------------------------------------------------------------
@@ -408,12 +426,50 @@ router.get('/messages', async (req, res) => {
 router.post('/messages', async (req, res) => {
   const toId = Number(req.body.to_user_id);
   const body = String(req.body.body || '').trim().slice(0, 5000);
-  const other = await db.prepare(`SELECT id FROM users WHERE id=? AND role IN ('admin','teacher') AND status='active'`).get(toId);
+  const other = await db.prepare(`SELECT id FROM users WHERE id=? AND role IN ('admin','teacher','ta') AND status='active'`).get(toId);
   if (!other || !body) { req.setFlash('error', 'Message could not be sent.'); return res.redirect('/messages'); }
   await db.prepare('INSERT INTO messages (from_user_id, to_user_id, body) VALUES (?,?,?)').run(req.user.id, toId, body);
   notify(toId, 'message', 'New message', `${req.user.name} sent you a message.`);
   audit(req.user.id, 'message.sent', `to=${toId}`);
   res.redirect('/messages?with=' + toId);
+});
+
+// ---- live class sessions (student view) -----------------------------------------
+router.get('/sessions', async (req, res) => {
+  const enrollments = await db.prepare(`SELECT course_id FROM enrollments WHERE user_id=? AND status IN ('active','completed')`).all(req.user.id);
+  const courseIds = enrollments.map(e => e.course_id);
+  let upcoming = [], past = [];
+  if (courseIds.length) {
+    const ph = courseIds.map(() => '?').join(',');
+    const rows = await db.prepare(`SELECT s.*, c.title AS course_title,
+        (SELECT a.status FROM attendance a WHERE a.session_id=s.id AND a.user_id=?) AS my_mark
+      FROM live_sessions s JOIN courses c ON c.id=s.course_id
+      WHERE s.course_id IN (${ph}) AND s.status != 'cancelled'
+      ORDER BY s.starts_at DESC LIMIT 60`).all(req.user.id, ...courseIds);
+    const nowMs = Date.now();
+    for (const r of rows) {
+      const { end } = sessionTimes(r);
+      ((end && end.getTime() >= nowMs && r.status === 'scheduled') ? upcoming : past).push(r);
+    }
+    upcoming.reverse();
+  }
+  res.render('student/sessions', { title: 'Live Class Sessions', upcoming, past,
+    sessionDisplayTime, canJoinSession, now: new Date() });
+});
+
+// ---- calendar (student): sessions + quiz windows + assignment due dates ----------
+router.get('/calendar', async (req, res) => {
+  const now = new Date();
+  const year = Math.min(2100, Math.max(2000, parseInt(req.query.year || now.getUTCFullYear(), 10) || now.getUTCFullYear()));
+  const month = Math.min(12, Math.max(1, parseInt(req.query.month || (now.getUTCMonth() + 1), 10) || (now.getUTCMonth() + 1)));
+  const view = req.query.view === 'agenda' ? 'agenda' : 'month';
+  const enrollments = await db.prepare(`SELECT course_id FROM enrollments WHERE user_id=? AND status IN ('active','completed')`).all(req.user.id);
+  const events = await getCalendarEvents(year, month, enrollments.map(e => e.course_id));
+  const weeks = buildMonthGrid(year, month, events);
+  const monthName = new Date(Date.UTC(year, month - 1, 1)).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const prev = month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+  const next = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+  res.render('student/calendar', { title: 'My Calendar', weeks, events, year, month, monthName, view, prev, next });
 });
 
 module.exports = router;

@@ -57,6 +57,23 @@
           <div class="flex justify-between"><dt>Price</dt><dd class="font-semibold"><%= course.price_cents > 0 ? '$' + (course.price_cents/100).toFixed(2) : 'Free' %></dd></div>
         </dl>
       </div>
+      <% if (enrolled && sessions.length) { %>
+        <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-5 mt-4">
+          <h3 class="font-bold text-navy dark:text-white text-sm mb-3">📹 Upcoming live classes</h3>
+          <ul class="space-y-3 text-sm">
+            <% sessions.forEach(s2 => { const joinable = canJoinSession(s2, now); %>
+              <li class="border-b border-gray-100 dark:border-gray-700 pb-2 last:border-0">
+                <p class="font-semibold"><%= s2.title %></p>
+                <p class="text-xs text-gray-500"><%= sessionDisplayTime(s2) %></p>
+                <% if (joinable) { %>
+                  <a href="<%= s2.meeting_url %>" target="_blank" rel="noopener" class="inline-block mt-1 bg-green-600 text-white text-xs font-bold px-4 py-1.5 rounded-lg">Join Class Now</a>
+                <% } %>
+              </li>
+            <% }) %>
+          </ul>
+          <a href="/sessions" class="text-xs underline mt-2 inline-block">All my live sessions →</a>
+        </div>
+      <% } %>
     </aside>
   </div>
 </div>

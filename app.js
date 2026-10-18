@@ -118,7 +118,7 @@ app.get('/files/*', async (req, res) => {
   if (!abs.startsWith(root + path.sep)) return res.status(403).end();
   if (!req.user) { req.session.returnTo = req.originalUrl; return res.redirect('/login'); }
 
-  const isStaff = req.user.role === 'admin' || req.user.role === 'teacher';
+  const isStaff = ['admin', 'teacher', 'ta'].includes(req.user.role);
   let allowed = false;
 
   const mat = await db.prepare('SELECT course_id FROM materials WHERE file_path=?').get(rel);
@@ -172,6 +172,17 @@ ready.then(() => {
       console.log(`Beyond Borders English Academy running on http://localhost:${PORT}`);
       console.log('Admin login: admin@beyondborders.academy / ChangeMe123! (change on first login)');
     });
+    // Phase 2: in-process scheduler for live-session reminders (24h before)
+    // and auto-completing past sessions. Runs every 15 minutes while the
+    // process is alive. NOTE: on Render's free tier the process sleeps when
+    // idle, so reminders are best-effort -- the 24h window is wide enough
+    // that any wake-up inside it still delivers.
+    const { runSessionReminders } = require('./lib/helpers');
+    const tick = () => runSessionReminders()
+      .then(r => { if (r.reminded || r.completed) console.log(`[reminders] reminded=${r.reminded} completed=${r.completed}`); })
+      .catch(e => console.error('[reminders] tick failed:', e.message));
+    setTimeout(tick, 60 * 1000); // first run 1 min after boot
+    setInterval(tick, 15 * 60 * 1000);
   }
 }).catch(err => {
   console.error('[db] failed to initialize:', err.message);

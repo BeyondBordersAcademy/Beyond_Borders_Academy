@@ -12,7 +12,7 @@
     <div class="grid grid-cols-2 gap-3">
       <div><label class="block font-semibold mb-1">Audience</label>
         <select name="audience" id="audSel" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
-          <option value="all">Entire academy</option><option value="course">Specific course</option>
+          <% if (user.role === 'admin') { %><option value="all">Entire academy</option><% } %><option value="course" <%= user.role === 'admin' ? '' : 'selected' %>>Specific course</option>
         </select></div>
       <div id="courseWrap" class="hidden"><label class="block font-semibold mb-1">Course</label>
         <select name="course_id" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
@@ -32,7 +32,11 @@
   <% }) %>
 </div>
 <script>
-document.getElementById('audSel').addEventListener('change', function () {
-  document.getElementById('courseWrap').classList.toggle('hidden', this.value !== 'course');
-});
+(function () {
+  var sel = document.getElementById('audSel');
+  var wrap = document.getElementById('courseWrap');
+  function sync() { wrap.classList.toggle('hidden', sel.value !== 'course'); }
+  sel.addEventListener('change', sync);
+  sync();
+})();
 </script>

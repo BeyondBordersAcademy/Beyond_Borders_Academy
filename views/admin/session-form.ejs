@@ -1,0 +1,57 @@
+<%- include('_nav', { active: '/admin/sessions' }) %>
+<h1 class="text-3xl font-extrabold text-navy dark:text-white"><%= s ? 'Edit Session' : 'Schedule Live Session' %></h1>
+<div class="gold-underline w-16 mt-2 mb-6"></div>
+
+<form method="post" action="<%= s ? '/admin/sessions/' + s.id : '/admin/sessions' %>" class="max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow p-6 space-y-4 text-sm">
+  <div><label class="block font-semibold mb-1">Course *</label>
+    <select name="course_id" required class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+      <% courses.forEach(c => { %>
+        <option value="<%= c.id %>" <%= s && s.course_id === c.id ? 'selected' : '' %>><%= c.title %></option>
+      <% }) %>
+    </select></div>
+  <div><label class="block font-semibold mb-1">Session title *</label>
+    <input name="title" required maxlength="200" value="<%= s ? s.title : '' %>" placeholder="e.g. Conversation Practice: At the Doctor's" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+  <div><label class="block font-semibold mb-1">Description</label>
+    <textarea name="description" rows="3" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900" placeholder="What will you cover? Any preparation for students?"><%= s ? s.description : '' %></textarea></div>
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div><label class="block font-semibold mb-1">Date *</label>
+      <input type="date" name="date" required value="<%= parts ? parts.date : '' %>" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <div><label class="block font-semibold mb-1">Start time *</label>
+      <input type="time" name="time" required value="<%= parts ? parts.time : '' %>" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900"></div>
+    <div><label class="block font-semibold mb-1">Duration</label>
+      <select name="duration_min" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+        <% [30, 45, 60, 90, 120].forEach(d => { %>
+          <option value="<%= d %>" <%= s && s.duration_min === d ? 'selected' : (!s && d === 60 ? 'selected' : '') %>><%= d %> min</option>
+        <% }) %>
+      </select></div>
+    <div><label class="block font-semibold mb-1">Timezone *</label>
+      <select name="timezone" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+        <% timezones.forEach(tz => { %>
+          <option value="<%= tz %>" <%= s && s.timezone === tz ? 'selected' : (!s && tz === 'America/New_York' ? 'selected' : '') %>><%= tz.replace('_', ' ') %></option>
+        <% }) %>
+      </select></div>
+  </div>
+  <p class="text-xs text-gray-500">Enter the date and time in the selected timezone — students everywhere will see it converted correctly.</p>
+  <div><label class="block font-semibold mb-1">Meeting URL <span class="font-normal text-gray-500">(Zoom / Google Meet link)</span></label>
+    <input name="meeting_url" type="url" maxlength="500" value="<%= s ? s.meeting_url : '' %>" placeholder="https://..." class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900">
+    <p class="text-xs text-gray-500 mt-1">Paste the meeting link from Zoom or Google Meet. The student's Join button opens this link.</p></div>
+  <div class="flex gap-3 pt-2">
+    <button class="bg-gold text-navy font-bold px-6 py-2.5 rounded-lg"><%= s ? 'Save Changes' : 'Schedule Session' %></button>
+    <a href="/admin/sessions" class="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600">Cancel</a>
+  </div>
+</form>
+
+<% if (s) { %>
+<div class="max-w-2xl mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow p-6 text-sm space-y-3">
+  <h2 class="font-bold text-navy dark:text-white">Danger zone</h2>
+  <form method="post" action="/admin/sessions/<%= s.id %>" class="flex items-center gap-3" onsubmit="return confirm('Cancel this session? Students will be notified.')">
+    <input type="hidden" name="action" value="cancel">
+    <button class="bg-amber-500 text-white font-semibold px-4 py-2 rounded-lg">Cancel session</button>
+    <span class="text-xs text-gray-500">Status becomes "cancelled"; students are notified in-app.</span>
+  </form>
+  <form method="post" action="/admin/sessions/<%= s.id %>" onsubmit="return confirm('Permanently delete this session and its attendance records?')">
+    <input type="hidden" name="action" value="delete">
+    <button class="text-red-600 underline text-xs">Delete session permanently</button>
+  </form>
+</div>
+<% } %>

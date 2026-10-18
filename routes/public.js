@@ -4,7 +4,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const slugify = require('slugify');
 const { db, getSetting } = require('../lib/db');
-const { audit, notify, sendEmail, randomToken, esc } = require('../lib/helpers');
+const { audit, notify, sendEmail, randomToken, esc, sessionDisplayTime, canJoinSession, sessionTimes, toDbTs } = require('../lib/helpers');
 const { QUESTIONS, estimateCEFR, LEVEL_DESCRIPTIONS, CEFR_ORDER } = require('../lib/placement');
 
 const router = express.Router();
@@ -59,7 +59,15 @@ router.get('/courses/:slug', async (req, res) => {
     enrolled = !!await db.prepare('SELECT id FROM enrollments WHERE user_id=? AND course_id=? AND status IN (\'active\',\'completed\')')
       .get(req.user.id, course.id);
   }
-  res.render('public/course-detail', { title: course.title, course, units, lessons, enrolled });
+  let sessions = [];
+  if (enrolled) {
+    const raw = await db.prepare(`SELECT * FROM live_sessions WHERE course_id=? AND status='scheduled' AND starts_at >= ?
+      ORDER BY starts_at LIMIT 5`).all(course.id, toDbTs(new Date(Date.now() - 6 * 3600 * 1000)));
+    const nowMs = Date.now();
+    sessions = raw.filter(ss => { const { end } = sessionTimes(ss); return end && end.getTime() >= nowMs; });
+  }
+  res.render('public/course-detail', { title: course.title, course, units, lessons, enrolled, sessions,
+    sessionDisplayTime, canJoinSession, now: new Date() });
 });
 
 // ---- placement assessment ---------------------------------------------------
@@ -228,7 +236,12 @@ router.post('/forgot', async (req, res) => {
     sendEmail(email, 'Password reset', `Use this link within 1 hour to reset your password:\n${link}`);
     notify(user.id, 'security', 'Password reset requested', 'A reset link was requested. It expires in 1 hour.');
   }
-  req.setFlash('info', 'If an account exists for that email, a reset link has been sent.');
+  const { emailConfigured } = require('../lib/helpers');
+  if (await emailConfigured()) {
+    req.setFlash('info', 'If an account exists for that email, a reset link has been sent.');
+  } else {
+    req.setFlash('info', 'If an account exists for that email, a reset was requested. Email is not configured on this site, so ask your teacher for a reset link.');
+  }
   res.redirect('/login');
 });
 

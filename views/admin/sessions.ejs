@@ -1,0 +1,46 @@
+<%- include('_nav', { active: '/admin/sessions' }) %>
+<div class="flex items-center justify-between flex-wrap gap-3">
+  <div>
+    <h1 class="text-3xl font-extrabold text-navy dark:text-white">Live Class Sessions</h1>
+    <div class="gold-underline w-16 mt-2"></div>
+  </div>
+  <% if (user.role !== 'ta') { %>
+    <a href="/admin/sessions/new" class="bg-gold text-navy font-bold px-5 py-2.5 rounded-lg text-sm">+ Schedule Session</a>
+  <% } %>
+</div>
+
+<div class="mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead><tr class="text-left text-gray-500 border-b dark:border-gray-700">
+      <th class="px-4 py-3">Session</th><th class="px-4 py-3">Course</th><th class="px-4 py-3">When</th>
+      <th class="px-4 py-3">Status</th><th class="px-4 py-3">Attendance</th><th class="px-4 py-3">Actions</th>
+    </tr></thead>
+    <tbody>
+      <% if (!sessions.length) { %>
+        <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No sessions yet. Schedule your first live class!</td></tr>
+      <% } %>
+      <% sessions.forEach(s => { %>
+        <tr class="border-b border-gray-100 dark:border-gray-700">
+          <td class="px-4 py-3">
+            <p class="font-semibold text-navy dark:text-white"><%= s.title %></p>
+            <p class="text-xs text-gray-500"><%= s.duration_min %> min<% if (s.meeting_url) { %> · <a href="<%= s.meeting_url %>" target="_blank" rel="noopener" class="underline text-navy dark:text-gold">meeting link ↗</a><% } %></p>
+          </td>
+          <td class="px-4 py-3"><%= s.course_title %></td>
+          <td class="px-4 py-3 whitespace-nowrap text-xs"><%= sessionDisplayTime(s) %></td>
+          <td class="px-4 py-3">
+            <span class="text-xs font-bold px-2 py-0.5 rounded <%= s.status === 'scheduled' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : s.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200' %>"><%= s.status %></span>
+            <% if (canJoinSession(s, now)) { %>
+              <a href="<%= s.meeting_url %>" target="_blank" rel="noopener" class="ml-2 text-xs font-bold bg-navy text-white px-3 py-1 rounded-full">Join now</a>
+            <% } %>
+          </td>
+          <td class="px-4 py-3 text-xs"><%= s.marked %> marked</td>
+          <td class="px-4 py-3 whitespace-nowrap text-xs">
+            <a href="/admin/sessions/<%= s.id %>/attendance" class="underline mr-2">Attendance</a>
+            <% if (user.role !== 'ta') { %><a href="/admin/sessions/<%= s.id %>/edit" class="underline">Edit</a><% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<p class="text-xs text-gray-500 mt-4">Students see the <strong>Join</strong> button from 15 minutes before the start until the session ends. Email reminders go out automatically 24 hours before each session.</p>
