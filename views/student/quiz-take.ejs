@@ -13,6 +13,12 @@
     <% questions.forEach((q, i) => { const opts = JSON.parse(q.options_json || '[]'); %>
       <fieldset class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow">
         <legend class="font-semibold px-1"><%= i + 1 %>. <%= q.prompt %> <span class="text-xs text-gray-500">(<%= q.points %> pt)</span></legend>
+        <% if (q.audio_url) { %>
+          <div class="mt-2 mb-1">
+            <audio controls preload="none" src="<%= q.audio_url %>" class="w-full"></audio>
+            <p class="text-xs text-gray-500 mt-1">Press play to listen. You may replay it as many times as you need.</p>
+          </div>
+        <% } %>
         <div class="mt-3 space-y-2">
           <% if (q.qtype === 'multiple_choice' || q.qtype === 'true_false') { %>
             <% opts.forEach(o => { %>
