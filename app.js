@@ -35,10 +35,10 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.tailwindcss.com'],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.tailwindcss.com', 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-      imgSrc: ["'self'", 'data:', 'blob:'],
-      mediaSrc: ["'self'", 'blob:'],
+      imgSrc: ["'self'", 'data:', 'blob:', 'https://qwhzsqvdbhvmuteuborg.supabase.co'],
+      mediaSrc: ["'self'", 'blob:', 'https://qwhzsqvdbhvmuteuborg.supabase.co'],
       connectSrc: ["'self'"],
-      frameSrc: ["'self'"],
+      frameSrc: ["'self'", 'https://qwhzsqvdbhvmuteuborg.supabase.co'],
     },
   },
 }));
